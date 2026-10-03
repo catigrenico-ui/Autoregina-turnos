@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUTO REGINA — Turnos, Mecánico y Servicios</title>
+    <title>AUTO REGINA — Turnos y Servicios</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
         import { 
@@ -56,7 +56,6 @@
         .btn-guardar{background:#10B981;color:white;}
         .btn-eliminar{background:#FEE2E2;color:#B91C1C;}
         .btn-editar{background:#DBEAFE;color:#1E40AF;}
-        .btn-cancelar{background:#E5E7EB;color:#4B5563;margin-left:8px;}
         .acceso-taller{width:100%;background:transparent;color:#0F2B48;border:2px solid #0F2B48;padding:14px;border-radius:12px;font-size:15px;font-weight:700;margin-top:20px;cursor:pointer;}
         .modal{position:fixed;inset:0;background:rgba(15,43,72,.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;}
         .modal-caja{background:white;padding:24px;border-radius:16px;width:100%;max-width:340px;}
@@ -96,7 +95,6 @@
         .mecanico-tarjeta{background:linear-gradient(135deg,#0F2B48,#165DFF);color:white;border-radius:16px;padding:20px;margin-bottom:16px;}
         .mecanico-dato{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.2);}
         .mecanico-dato:last-child{border-bottom:none;}
-        .info-mecanico{background:#E0F2FE;border-left:4px solid #0F2B48;padding:12px 14px;border-radius:0 12px 12px 0;margin:12px 0;}
     </style>
 </head>
 <body>
@@ -122,37 +120,20 @@
 
     <div class="form-seccion">
         <h2 style="text-align:center;">📅 Pedí tu Turno</h2>
-        
         <label>Fecha</label>
         <input type="date" id="fecha">
-        
         <label>Horario</label>
         <select id="horario">
             <option value="">Seleccioná</option>
             <option>Mañana — 09:00 a 12:00</option>
             <option>Tarde — 15:00 a 18:00</option>
         </select>
-        
-        <label>👤 Mecánico que te va a atender</label>
-        <select id="mecanico-atencion">
-            <option value="">Seleccioná el mecánico</option>
-            <option value="A definir">A definir</option>
-        </select>
-        <div id="info-mecanico-mostrar" class="info-mecanico oculto">
-            <strong>👤 Atendido por:</strong><br>
-            <span id="dato-mec-nombre"></span><br>
-            <span id="dato-mec-esp"></span>
-        </div>
-        
         <label>Tu Nombre</label>
         <input type="text" id="nombre" placeholder="Nombre y Apellido">
-        
         <label>Teléfono / WhatsApp</label>
         <input type="tel" id="telefono" placeholder="2984 548329">
-        
         <label>Vehículo</label>
         <input type="text" id="vehiculo" placeholder="Marca, modelo, año">
-        
         <label>Servicio</label>
         <select id="servicio">
             <option value="">Seleccioná</option>
@@ -165,9 +146,7 @@
             <option>Diagnóstico / Escaneo</option>
             <option>Otros</option>
         </select>
-        
         <button class="btn-principal" onclick="generarTurno()">✅ GENERAR TURNO</button>
-        
         <div id="caja-turno" class="oculto">
             <div class="aviso-exito">✅ ¡Listo! Mensaje generado</div>
             <div class="vista-previa" id="texto-turno"></div>
@@ -287,7 +266,7 @@
     <div id="sec-mecanico" class="oculto">
         <h2>🔧 Datos del Mecánico</h2>
         <div class="form-seccion">
-            <h3>Agregar / Editar Mecánico</h3>
+            <h3>Editar Datos del Mecánico</h3>
             <label>Nombre Completo</label>
             <input type="text" id="mec-nombre" placeholder="Nombre y Apellido">
             <label>Teléfono / WhatsApp</label>
@@ -304,11 +283,17 @@
                 <option>Jefe de Taller</option>
             </select>
             <div class="fila">
-                <button class="btn-guardar" onclick="guardarMecanico()">✅ GUARDAR MECÁNICO</button>
+                <button class="btn-guardar" onclick="guardarMecanico()">✅ GUARDAR DATOS</button>
             </div>
         </div>
-        <h3>👤 Lista de Mecánicos</h3>
-        <div id="lista-mecanicos"><p class="sin-datos">Cargando...</p></div>
+        <h3>👤 Mecánico que atiende</h3>
+        <div class="mecanico-tarjeta">
+            <div class="mecanico-dato"><strong>Nombre:</strong> <span id="vm-nombre">No cargado</span></div>
+            <div class="mecanico-dato"><strong>Teléfono:</strong> <span id="vm-tel">—</span></div>
+            <div class="mecanico-dato"><strong>DNI:</strong> <span id="vm-dni">—</span></div>
+            <div class="mecanico-dato"><strong>Especialidad:</strong> <span id="vm-esp">—</span></div>
+        </div>
+        <p style="color:#64748B;font-size:13px;margin-top:8px;">💡 Estos datos aparecen en las órdenes y turnos</p>
     </div>
 
     <div id="sec-asistente" class="oculto">
@@ -337,42 +322,6 @@ const NUMERO_WSP = '+54 9 2984 54-8329';
 const API_KEY = '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';
 let filaIndice = 0;
 let historialConversacion = [];
-let mecanicosLista = [];
-
-// Cargar mecánicos en el select del cliente
-async function cargarSelectMecanicos() {
-    const { collection, getDocs, query, orderBy } = Firestore;
-    const select = document.getElementById('mecanico-atencion');
-    select.innerHTML = '<option value="">Seleccioná el mecánico</option><option value="A definir">A definir</option>';
-    mecanicosLista = [];
-    try {
-        const q = query(collection(db, 'mecanicos'), orderBy('nombre'));
-        const snap = await getDocs(q);
-        snap.forEach(d => {
-            const m = {id: d.id, ...d.data()};
-            mecanicosLista.push(m);
-            select.innerHTML += `<option value="${m.nombre}">${m.nombre} — ${m.especialidad||'Sin especialidad'}</option>`;
-        });
-    } catch (err) { console.log('Sin mecánicos guardados'); }
-}
-
-// Mostrar datos del mecánico seleccionado
-document.getElementById('mecanico-atencion').addEventListener('change', function() {
-    const val = this.value;
-    const caja = document.getElementById('info-mecanico-mostrar');
-    if (!val || val === 'A definir') {
-        caja.classList.add('oculto');
-        return;
-    }
-    const m = mecanicosLista.find(x => x.nombre === val);
-    if (m) {
-        document.getElementById('dato-mec-nombre').textContent = m.nombre;
-        document.getElementById('dato-mec-esp').textContent = m.especialidad || 'Mecánico';
-        caja.classList.remove('oculto');
-    } else {
-        caja.classList.add('oculto');
-    }
-});
 
 async function asegurarCliente(nombre, telefono, vehiculo) {
     const { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimestamp } = Firestore;
@@ -390,68 +339,33 @@ async function asegurarCliente(nombre, telefono, vehiculo) {
 }
 
 async function guardarMecanico() {
-    const { collection, addDoc, getDocs, query, where, doc, deleteDoc } = Firestore;
+    const { doc, setDoc } = Firestore;
     const nombre = document.getElementById('mec-nombre').value.trim();
     const tel = document.getElementById('mec-tel').value.trim();
     const dni = document.getElementById('mec-dni').value.trim();
     const esp = document.getElementById('mec-especialidad').value;
     if (!nombre || !tel) { alert('Nombre y teléfono obligatorios'); return; }
-    
-    // Verificar si ya existe para actualizar
-    const q = query(collection(db, 'mecanicos'), where('nombre', '==', nombre));
-    const snap = await getDocs(q);
-    
-    if (!snap.empty) {
-        // Actualizar existente
-        await updateDoc(snap.docs[0].ref, {
-            telefono: tel, dni, especialidad: esp, actualizado: serverTimestamp()
-        });
-    } else {
-        // Agregar nuevo
-        await addDoc(collection(db, 'mecanicos'), {
-            nombre, telefono: tel, dni, especialidad: esp, creado: serverTimestamp()
-        });
-    }
-    
+    await setDoc(doc(db, 'configuracion', 'datos-mecanico'), {nombre, telefono: tel, dni, especialidad: esp}, {merge:true});
     document.getElementById('mec-nombre').value = '';
     document.getElementById('mec-tel').value = '';
     document.getElementById('mec-dni').value = '';
     document.getElementById('mec-especialidad').value = '';
-    
-    await cargarListaMecanicos();
-    await cargarSelectMecanicos();
-    alert('✅ Mecánico guardado');
+    await cargarVistaMecanico();
+    alert('✅ Datos guardados');
 }
 
-async function cargarListaMecanicos() {
-    const { collection, getDocs, query, orderBy } = Firestore;
-    const c = document.getElementById('lista-mecanicos');
+async function cargarVistaMecanico() {
+    const { doc, getDoc } = Firestore;
     try {
-        const q = query(collection(db, 'mecanicos'), orderBy('nombre'));
-        const s = await getDocs(q);
-        if (s.empty) { c.innerHTML = '<p class="sin-datos">No hay mecánicos cargados aún</p>'; return; }
-        c.innerHTML = '';
-        s.forEach(d => {
-            const x = d.data();
-            c.innerHTML += `<div class="lista-item">
-                <p><strong>${x.nombre}</strong></p>
-                <p>📞 ${x.telefono}</p>
-                <p>🪪 ${x.dni || 'Sin DNI'}</p>
-                <p>🔧 ${x.especialidad || 'General'}</p>
-                <div class="acciones">
-                    <button class="btn-chico btn-eliminar" onclick="borrarMecanico('${d.id}')">🗑️ Eliminar</button>
-                </div>
-            </div>`;
-        });
-    } catch (err) { c.innerHTML = `<p class="sin-datos">❌ ${err.message}</p>`; }
-}
-
-async function borrarMecanico(id) {
-    if (!confirm('¿Eliminar este mecánico?')) return;
-    const { doc, deleteDoc } = Firestore;
-    await deleteDoc(doc(db, 'mecanicos', id));
-    await cargarListaMecanicos();
-    await cargarSelectMecanicos();
+        const d = await getDoc(doc(db, 'configuracion', 'datos-mecanico'));
+        if (d.exists()) {
+            const m = d.data();
+            document.getElementById('vm-nombre').textContent = m.nombre || 'No cargado';
+            document.getElementById('vm-tel').textContent = m.telefono || '—';
+            document.getElementById('vm-dni').textContent = m.dni || '—';
+            document.getElementById('vm-esp').textContent = m.especialidad || '—';
+        }
+    } catch (err) { console.log('Sin datos de mecánico'); }
 }
 
 async function llamarIA(mensaje) {
@@ -551,35 +465,23 @@ function mostrar(nombre) {
 async function generarTurno() {
     const fecha = document.getElementById('fecha').value;
     const horario = document.getElementById('horario').value;
-    const mecanico = document.getElementById('mecanico-atencion').value || 'No especificado';
     const nombre = document.getElementById('nombre').value.trim();
     const telefono = document.getElementById('telefono').value.trim();
     const vehiculo = document.getElementById('vehiculo').value.trim();
     const servicio = document.getElementById('servicio').value;
-    
-    if (!fecha || !horario || !nombre || !telefono || !servicio) { 
-        alert('Completá todos los campos obligatorios'); 
-        return; 
-    }
-    
+    if (!fecha || !horario || !nombre || !telefono || !servicio) { alert('Completá todos los campos'); return; }
     const mensaje = `📅 TURNO — AUTO REGINA
 ━━━━━━━━━━━━━━━━━━
 📆 Fecha: ${fecha}
 ⏰ Horario: ${horario}
-👤 Te atiende: ${mecanico}
 👤 Cliente: ${nombre}
 📞 Teléfono: ${telefono}
 🚗 Vehículo: ${vehiculo || '---'}
 🔧 Servicio: ${servicio}
 ━━━━━━━━━━━━━━━━━━
 📞 ${NUMERO_WSP}`;
-    
     const { collection, addDoc, serverTimestamp } = Firestore;
-    await addDoc(collection(db, 'turnos'), {
-        fecha, horario, mecanico, nombre, telefono, vehiculo, servicio, 
-        estado:'pendiente', creado: serverTimestamp()
-    });
-    
+    await addDoc(collection(db, 'turnos'), {fecha, horario, nombre, telefono, vehiculo, servicio, estado:'pendiente', creado: serverTimestamp()});
     await asegurarCliente(nombre, telefono, vehiculo);
     document.getElementById('texto-turno').textContent = mensaje;
     document.getElementById('caja-turno').classList.remove('oculto');
@@ -626,13 +528,7 @@ async function copiarTurno() {
 }
 
 async function iniciarTodo() {
-    await Promise.all([
-        cargarTurnos(), 
-        cargarClientes(), 
-        cargarSelectClientes(), 
-        cargarListaMecanicos(),
-        cargarSelectMecanicos()
-    ]);
+    await Promise.all([cargarTurnos(), cargarClientes(), cargarSelectClientes(), cargarVistaMecanico()]);
     document.getElementById('fecha-ingreso').valueAsDate = new Date();
     agregarFila();
 }
@@ -651,7 +547,6 @@ async function cargarTurnos() {
             c.innerHTML += `<div class="lista-item">
                 <span class="estado ${estClase}">${x.estado||'pendiente'}</span>
                 <p><strong>📅 ${x.fecha}</strong> — ${x.horario}</p>
-                <p>🔧 Mecánico: ${x.mecanico || 'No especificado'}</p>
                 <p>👤 ${x.nombre}</p><p>📞 ${x.telefono}</p>
                 <p>🚗 ${x.vehiculo||'-'}</p><p>🔧 ${x.servicio}</p>
                 <div class="acciones">
@@ -789,4 +684,64 @@ async function generarOrden() {
             const subt = c * p; filas.push({cant:c, desc:d, precio:p, subtotal:subt}); total += subt;
         }
     });
-    const detalle = filas.map(f => `${f.cant} x ${f.desc} —
+    const detalle = filas.map(f => `${f.cant} x ${f.desc} — $${f.subtotal.toLocaleString('es-AR')}`).join('\n');
+    const ordenTexto = `📝 ORDEN DE SERVICIO — AUTO REGINA
+━━━━━━━━━━━━━━━━━━━━
+📅 Fecha: ${fecha}
+🚗 Vehículo: ${marca} ${modelo}
+🔑 Patente: ${placa||'---'}
+📏 Km: ${km||'---'}
+👤 Cliente: ${nombre}
+📞 Teléfono: ${tel}
+━━━━━━━━━━━━━━━━━━━━
+TRABAJOS:
+${detalle||'Sin detalle'}
+━━━━━━━━━━━━━━━━━━━━
+💰 TOTAL: $${total.toLocaleString('es-AR')}
+Observaciones: ${obs||'Ninguna'}
+
+AUTO REGINA
+⚙️ Mecánica · ⚡ Electricidad · 🖥️ Inyección
+📞 ${NUMERO_WSP}`;
+    document.getElementById('texto-orden').textContent = ordenTexto;
+    document.getElementById('caja-orden').classList.remove('oculto');
+    const { collection, addDoc, serverTimestamp } = Firestore;
+    await addDoc(collection(db, 'ordenes'), {fecha, marca, modelo, placa, km, nombre, telefono:tel, trabajos:filas, total, observaciones:obs, creado: serverTimestamp()});
+}
+
+async function copiarOrden() {
+    const texto = document.getElementById('texto-orden').textContent;
+    const areaOculta = document.getElementById('area-copiado');
+    const btn = document.getElementById('btn-copiar-orden');
+    
+    try {
+        await navigator.clipboard.writeText(texto);
+        btn.textContent = '✅ COPIADO — ¡Listo!';
+        btn.classList.add('btn-copiado');
+        setTimeout(() => {
+            btn.textContent = '📋 COPIAR ORDEN';
+            btn.classList.remove('btn-copiado');
+        }, 3000);
+        return;
+    } catch (err) {}
+    
+    try {
+        areaOculta.value = texto;
+        areaOculta.select();
+        document.execCommand('copy');
+        btn.textContent = '✅ COPIADO — ¡Listo!';
+        btn.classList.add('btn-copiado');
+        setTimeout(() => {
+            btn.textContent = '📋 COPIAR ORDEN';
+            btn.classList.remove('btn-copiado');
+        }, 3000);
+        return;
+    } catch (err2) {}
+    
+    alert('Seleccioná y copiá el texto de la orden manualmente');
+}
+
+document.getElementById('fecha').valueAsDate = new Date();
+</script>
+</body>
+</html>
