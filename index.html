@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AUTO REGINA — Turnos y Servicios</title>
+<title>AUTO REGINA — Taller Nueva Versión</title>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, where, getDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
@@ -50,6 +50,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 .btn-guardar{background:#10B981;color:white;}
 .btn-eliminar{background:#FEE2E2;color:#B91C1C;}
 .btn-editar{background:#DBEAFE;color:#1E40AF;}
+.btn‑nueva‑orden{background:#E0F2FE;color:#0C4A6E;border:none;border-radius:10px;padding:10px 14px;font-weight:600;margin-bottom:12px;cursor:pointer;}
 .acceso-taller{width:100%;background:transparent;color:#0F2B48;border:2px solid #0F2B48;padding:14px;border-radius:12px;font-size:15px;font-weight:700;margin-top:20px;cursor:pointer;}
 .modal{position:fixed;inset:0;background:rgba(15,43,72,.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;}
 .modal-caja{background:white;padding:24px;border-radius:16px;width:100%;max-width:340px;}
@@ -172,6 +173,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <button class="pestaña activa" onclick="mostrar('turnos')">📋 Turnos</button>
 <button class="pestaña inactiva" onclick="mostrar('clientes')">👥 Clientes</button>
 <button class="pestaña inactiva" onclick="mostrar('orden')">📝 Orden</button>
+<button class="pestaña inactiva" onclick="mostrar('lista‑ordenes')">📑 Órdenes Guardadas</button>
 <button class="pestaña inactiva" onclick="mostrar('asistente')">🤖 IA</button>
 <button class="pestaña salir" onclick="salir()">🚪 Salir</button>
 </div>
@@ -282,14 +284,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <label class="inv-item"><input type="checkbox" class="inv-chk"> Encendedor</label>
 </div>
 </div>
-<button class="btn-principal" onclick="generarOrden()">✅ GENERAR ORDEN</button>
-</div>
+<button class="btn-principal" onclick="guardarOActualizarOrden()">✅ GUARDAR ORDEN</button>
 <div id="caja-orden" class="oculto">
-<div class="aviso-exito">✅ Orden generada</div>
+<div class="aviso-exito">✅ Orden guardada/actualizada</div>
 <div class="vista-previa" id="texto-orden"></div>
 <button id="btn-copiar-orden" class="btn-copiar" onclick="copiarOrden()">📋 COPIAR ORDEN</button>
 <p style="text-align:center;margin:12px 0;color:#10B981;font-weight:bold;">👇 Pegalo en WhatsApp</p>
 </div>
+</div>
+</div>
+
+<div id="sec‑lista‑ordenes" class="oculto">
+<h2>📑 Órdenes Guardadas</h2>
+<button class="btn‑nueva‑orden" onclick="irNuevaOrden()">➕ Crear nueva orden</button>
+<div id="lista‑ordenes"><p class="cargando">Cargando órdenes…</p></div>
 </div>
 
 <div id="sec-asistente" class="oculto">
@@ -311,34 +319,35 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 </div>
 </div>
 </div>
-
 <script>
+   <script>
 const CLAVE_CORRECTA = '1234';
-const NUMERO_WSP = '+54 9 2984 54-8329';
-const API_KEY = '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';
+const NUMERO_WSP = '+54 9 2984 54‑8329';
+const API_KEY = 'sk‑or‑v1‑20107d1000bb776b707f6157ccb9ce3a9e4aa0617b96bec3be1d170def65f0be';
 let filaIndice = 0;
 let historialConversacion = [];
+let idOrdenEnEdicion = null;
 
 function actualizarTotal() {
   let total = 0;
-  document.querySelectorAll('#cuerpo-tabla tr').forEach(fila => {
-    const idBase = fila.querySelector('[id^=cant-]')?.id?.replace('cant-','');
+  document.querySelectorAll('#cuerpo‑tabla tr').forEach(fila => {
+    const idBase = fila.querySelector('[id^=cant‑]')?.id?.replace('cant‑','');
     if (!idBase) return;
-    const cant = parseFloat(document.getElementById(`cant-${idBase}`)?.value) || 0;
-    const prec = parseFloat(document.getElementById(`prec-${idBase}`)?.value) || 0;
+    const cant = parseFloat(document.getElementById(`cant‑${idBase}`)?.value) || 0;
+    const prec = parseFloat(document.getElementById(`prec‑${idBase}`)?.value) || 0;
     const imp = cant * prec;
-    const celdaImp = document.getElementById(`imp-${idBase}`);
+    const celdaImp = document.getElementById(`imp‑${idBase}`);
     if (celdaImp) celdaImp.textContent = imp.toFixed(2).replace('.',',');
     total += imp;
   });
-  document.getElementById('total-general').textContent = total.toFixed(2).replace('.',',');
+  document.getElementById('total‑general').textContent = total.toFixed(2).replace('.',',');
 }
 
 function agregarFila() {
-  const cuerpo = document.getElementById('cuerpo-tabla');
+  const cuerpo = document.getElementById('cuerpo‑tabla');
   const id = filaIndice++;
   const fila = document.createElement('tr');
-  fila.innerHTML = `<td class="cant"><input type="number" id="cant-${id}" value="1" min="1" oninput="actualizarTotal()"></td><td class="desc"><input type="text" id="desc-${id}" placeholder="Descripción"></td><td class="precio"><input type="number" id="prec-${id}" value="0" min="0" step="0.01" oninput="actualizarTotal()"></td><td class="importe" id="imp-${id}">0,00</td>`;
+  fila.innerHTML = `<td class="cant"><input type="number" id="cant‑${id}" value="1" min="1" oninput="actualizarTotal()"></td><td class="desc"><input type="text" id="desc‑${id}" placeholder="Descripción"></td><td class="precio"><input type="number" id="prec‑${id}" value="0" min="0" step="0.01" oninput="actualizarTotal()"></td><td class="importe" id="imp‑${id}">0,00</td>`;
   cuerpo.appendChild(fila);
   actualizarTotal();
 }
@@ -358,7 +367,6 @@ async function asegurarCliente(nombre, telefono, vehiculo) {
 async function llamarIA(mensaje) {
   const { collection, getDocs, query, orderBy } = Firestore;
   const consulta = mensaje.toLowerCase();
-
   if (consulta.includes('resumen') || consulta.includes('facturación') || consulta.includes('totales')) {
     try {
       const turnosSnap = await getDocs(query(collection(db, 'turnos'), orderBy('creado','desc')));
@@ -368,7 +376,14 @@ async function llamarIA(mensaje) {
       const cliSnap = await getDocs(collection(db, 'clientes'));
       const ordSnap = await getDocs(collection(db, 'ordenes'));
       let totalFac = 0;
-      ordSnap.forEach(d=>{ totalFac += d.data().total || 0; });
+      let cantOrdenesReales = 0;
+      ordSnap.forEach(d=>{
+        const dato = d.data();
+        if (dato.hasOwnProperty('esPrueba') && dato.esPrueba === false) {
+          totalFac += dato.total || 0;
+          cantOrdenesReales++;
+        }
+      });
       return `📊 RESUMEN — AUTO REGINA
 ━━━━━━━━━━━━━━━━━━━━
 📋 TURNOS: ${turnosSnap.size}
@@ -376,90 +391,90 @@ async function llamarIA(mensaje) {
 • Confirmados: ${conf}
 • Atendidos: ${aten}
 👥 CLIENTES: ${cliSnap.size}
-✅ ÓRDENES: ${ordSnap.size}
-💰 TOTAL FACTURADO: $${totalFac.toLocaleString('es-AR',{minimumFractionDigits:2})}
+✅ ÓRDENES REALES: ${cantOrdenesReales}
+💰 TOTAL FACTURADO (solo órdenes reales): $${totalFac.toLocaleString('es‑AR',{minimumFractionDigits:2})}
 ━━━━━━━━━━━━━━━━━━━━`;
     } catch { return 'No pude leer los datos.'; }
   }
-
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'openai/gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'Eres asistente técnico automotriz para AUTO REGINA. Explicá claro, paso a paso, para mecánicos y aprendices. Usá lenguaje sencillo en español. Incluí códigos OBD, causas comunes y soluciones prácticas.' },
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${API_KEY}`,'Content‑Type':'application/json'},
+      body:JSON.stringify({
+        model:'meta‑llama/llama‑3.1‑8b‑instruct',
+        messages:[
+          {role:'system',content:'Eres asistente técnico automotriz para AUTO REGINA. Explicá claro paso a paso, español sencillo, menciona códigos OBD, causas y soluciones prácticas.'},
           ...historialConversacion,
-          { role: 'user', content: mensaje }
+          {role:'user',content:mensaje}
         ]
       })
     });
     const datos = await res.json();
-    if (datos.error) return `❌ ${datos.error.message}`;
+    if(datos.error) return `❌ ${datos.error.message}`;
     return datos.choices?.[0]?.message?.content?.trim() || 'Sin respuesta';
-  } catch (e) { return `❌ Error: ${e.message}`; }
+  } catch(e){return `❌ Error: ${e.message}`;}
 }
 
-function pregRapida(texto) { document.getElementById('ia-texto').value = texto; enviarIA(); }
+function pregRapida(texto){document.getElementById('ia‑texto').value=texto;enviarIA();}
 
-async function enviarIA() {
-  const input = document.getElementById('ia-texto');
-  const texto = input.value.trim();
-  if (!texto) return;
-  const chat = document.getElementById('ia-chat');
-  chat.innerHTML += `<div class="ia-mensaje ia-usuario">${texto}</div>`;
+async function enviarIA(){
+  const input=document.getElementById('ia‑texto');
+  const texto=input.value.trim();
+  if(!texto) return;
+  const chat=document.getElementById('ia‑chat');
+  chat.innerHTML+=`<div class="ia‑mensaje ia‑usuario">${texto}</div>`;
   historialConversacion.push({role:'user',content:texto});
-  input.value = '';
-  const idPensando = 'p'+Date.now();
-  chat.innerHTML += `<div class="ia-mensaje ia-asistente ia-pensando" id="${idPensando}">🔄 Escribiendo...</div>`;
-  chat.scrollTop = chat.scrollHeight;
-  const resp = await llamarIA(texto);
-  document.getElementById(idPensando)?.remove();
-  chat.innerHTML += `<div class="ia-mensaje ia-asistente">${resp}</div>`;
+  input.value='';
+  const idPen='p'+Date.now();
+  chat.innerHTML+=`<div class="ia‑mensaje ia‑asistente ia‑pensando" id="${idPen}">🔄 Escribiendo…</div>`;
+  chat.scrollTop=chat.scrollHeight;
+  const resp=await llamarIA(texto);
+  document.getElementById(idPen)?.remove();
+  chat.innerHTML+=`<div class="ia‑mensaje ia‑asistente">${resp}</div>`;
   historialConversacion.push({role:'assistant',content:resp});
-  chat.scrollTop = chat.scrollHeight;
+  chat.scrollTop=chat.scrollHeight;
 }
 
-function abrirAcceso() { document.getElementById('modal-acceso').style.display='flex'; }
-function cerrarAcceso() { document.getElementById('modal-acceso').style.display='none'; }
-async function ingresar() {
-  if (document.getElementById('clave').value === CLAVE_CORRECTA) {
+function abrirAcceso(){document.getElementById('modal‑acceso').style.display='flex';}
+function cerrarAcceso(){document.getElementById('modal‑acceso').style.display='none';}
+async function ingresar(){
+  if(document.getElementById('clave').value===CLAVE_CORRECTA){
     cerrarAcceso();
-    document.getElementById('pantalla-cliente').classList.add('oculto');
-    document.getElementById('pantalla-taller').classList.remove('oculto');
+    document.getElementById('pantalla‑cliente').classList.add('oculto');
+    document.getElementById('pantalla‑taller').classList.remove('oculto');
     await iniciarTodo();
-  } else {
-    document.getElementById('error-clave').style.display='block';
-    setTimeout(()=>document.getElementById('error-clave').style.display='none',3000);
+  }else{
+    document.getElementById('error‑clave').style.display='block';
+    setTimeout(()=>document.getElementById('error‑clave').style.display='none',3000);
   }
 }
-function salir() {
-  document.getElementById('pantalla-taller').classList.add('oculto');
-  document.getElementById('pantalla-cliente').classList.remove('oculto');
+function salir(){
+  document.getElementById('pantalla‑taller').classList.add('oculto');
+  document.getElementById('pantalla‑cliente').classList.remove('oculto');
   document.getElementById('clave').value='';
 }
 
-function mostrar(nombre) {
+function mostrar(nombre){
   document.querySelectorAll('.pestaña').forEach(p=>{
-    const coincide = p.textContent.trim().toLowerCase().includes(nombre);
+    const coincide=p.textContent.trim().toLowerCase().includes(nombre);
     p.classList.remove('activa','inactiva');
     p.classList.add(coincide?'activa':'inactiva');
   });
-  ['turnos','clientes','orden','asistente'].forEach(s=>{
-    document.getElementById('sec-'+s).classList.toggle('oculto', s!==nombre);
+  ['turnos','clientes','orden','lista‑ordenes','asistente'].forEach(s=>{
+    document.getElementById('sec‑'+s).classList.toggle('oculto',s!==nombre);
   });
+  if(nombre==='lista‑ordenes') cargarOrdenesLista();
 }
 
-async function generarTurno() {
-  const fecha = document.getElementById('fecha').value;
-  const horario = document.getElementById('horario').value;
-  const nombre = document.getElementById('nombre').value.trim();
-  const telefono = document.getElementById('telefono').value.trim();
-  const vehiculo = document.getElementById('vehiculo').value.trim();
-  const servicio = document.getElementById('servicio').value;
-  if (!fecha||!horario||!nombre||!telefono||!servicio) { alert('Completá todos los campos'); return; }
-  const mensaje = `📅 TURNO — AUTO REGINA
+async function generarTurno(){
+  const fecha=document.getElementById('fecha').value;
+  const horario=document.getElementById('horario').value;
+  const nombre=document.getElementById('nombre').value.trim();
+  const telefono=document.getElementById('telefono').value.trim();
+  const vehiculo=document.getElementById('vehiculo').value.trim();
+  const servicio=document.getElementById('servicio').value;
+  if(!fecha||!horario||!nombre||!telefono||!servicio){alert('Completá todos los campos');return;}
+  const mensaje=`📅 TURNO — AUTO REGINA
 ━━━━━━━━━━━━━━━━━━━━
 📅 Fecha: ${fecha}
 ⏰ Horario: ${horario}
@@ -469,170 +484,208 @@ async function generarTurno() {
 🔧 Servicio: ${servicio}
 ━━━━━━━━━━━━━━━━━━━━
 📞 ${NUMERO_WSP}`;
-  const { collection, addDoc, serverTimestamp } = Firestore;
-  await addDoc(collection(db,'turnos'), {fecha,horario,nombre,telefono,vehiculo,servicio,estado:'pendiente',creado:serverTimestamp()});
+  const {collection,addDoc,serverTimestamp}=Firestore;
+  await addDoc(collection(db,'turnos'),{fecha,horario,nombre,telefono,vehiculo,servicio,estado:'pendiente',creado:serverTimestamp()});
   await asegurarCliente(nombre,telefono,vehiculo);
-  document.getElementById('texto-turno').textContent = mensaje;
-  document.getElementById('caja-turno').classList.remove('oculto');
+  document.getElementById('texto‑turno').textContent=mensaje;
+  document.getElementById('caja‑turno').classList.remove('oculto');
 }
 
-async function copiarTurno() {
-  const texto = document.getElementById('texto-turno').textContent;
-  const btn = document.getElementById('btn-copiar-turno');
-  try {
-    await navigator.clipboard.writeText(texto);
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 TOCÁ ACÁ PARA COPIAR'; btn.classList.remove('btn-copiado');},3000);
-  } catch {
-    const area = document.getElementById('area-copiado');
-    area.value=texto; area.select(); document.execCommand('copy');
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 TOCÁ ACÁ PARA COPIAR'; btn.classList.remove('btn-copiado');},3000);
-  }
+async function copiarTurno(){
+  const texto=document.getElementById('texto‑turno').textContent;
+  const btn=document.getElementById('btn‑copiar‑turno');
+  try{await navigator.clipboard.writeText(texto);btn.textContent='✅ COPIADO';btn.classList.add('btn‑copiado');setTimeout(()=>{btn.textContent='📋 TOCÁ ACÁ PARA COPIAR';btn.classList.remove('btn‑copiado');},3000);}
+  catch{const area=document.getElementById('area‑copiado');area.value=texto;area.select();document.execCommand('copy');btn.textContent='✅ COPIADO';btn.classList.add('btn‑copiado');setTimeout(()=>{btn.textContent='📋 TOCÁ ACÁ PARA COPIAR';btn.classList.remove('btn‑copiado');},3000);}
 }
 
-async function iniciarTodo() {
-  await Promise.all([cargarTurnos(), cargarClientes(), cargarSelectClientes()]);
-  document.getElementById('fecha-ingreso').valueAsDate = new Date();
-  if (!document.querySelectorAll('#cuerpo-tabla tr').length) agregarFila();
+async function iniciarTodo(){
+  await Promise.all([cargarTurnos(),cargarClientes(),cargarSelectClientes()]);
+  document.getElementById('fecha‑ingreso').valueAsDate=new Date();
+  if(!document.querySelectorAll('#cuerpo‑tabla tr').length) agregarFila();
   actualizarTotal();
 }
 
-async function cargarTurnos() {
-  const { collection, getDocs, query, orderBy } = Firestore;
-  const c = document.getElementById('lista-turnos');
-  try {
-    const q = query(collection(db,'turnos'), orderBy('creado','desc'));
-    const s = await getDocs(q);
-    if (s.empty) { c.innerHTML='<p class="sin-datos">No hay turnos aún</p>'; return; }
+async function cargarTurnos(){
+  const {collection,getDocs,query,orderBy}=Firestore;
+  const c=document.getElementById('lista‑turnos');
+  try{
+    const q=query(collection(db,'turnos'),orderBy('creado','desc'));
+    const s=await getDocs(q);
+    if(s.empty){c.innerHTML='<p class="sin‑datos">No hay turnos aún</p>';return;}
     c.innerHTML='';
     s.forEach(d=>{
       const x=d.data();
-      const estClase = x.estado==='pendiente'?'estado-pendiente':x.estado==='confirmado'?'estado-confirmado':'estado-atendido';
-      c.innerHTML += `<div class="lista-item"><span class="estado ${estClase}">${x.estado||'pendiente'}</span><p><strong>📅 ${x.fecha}</strong> — ${x.horario}</p><p>👤 ${x.nombre}</p><p>📞 ${x.telefono}</p><p>🚗 ${x.vehiculo||'-'}</p><p>🔧 ${x.servicio}</p><div class="acciones"><button class="btn-chico btn-editar" onclick="cambiarEstado('${d.id}','confirmado')">✅ Confirmar</button><button class="btn-chico btn-guardar" onclick="cambiarEstado('${d.id}','atendido')">✔️ Atendido</button><button class="btn-chico btn-eliminar" onclick="borrarTurno('${d.id}')">🗑️ Eliminar</button></div></div>`;
+      const estClase=x.estado==='pendiente'?'estado‑pendiente':x.estado==='confirmado'?'estado‑confirmado':'estado‑atendido';
+      c.innerHTML+=`<div class="lista‑item"><span class="estado ${estClase}">${x.estado||'pendiente'}</span><p><strong>📅 ${x.fecha}</strong> — ${x.horario}</p><p>👤 ${x.nombre}</p><p>📞 ${x.telefono}</p><p>🚗 ${x.vehiculo||'-'}</p><p>🔧 ${x.servicio}</p><div class="acciones"><button class="btn‑chico btn‑editar" onclick="cambiarEstado('${d.id}','confirmado')">✅ Confirmar</button><button class="btn‑chico btn‑guardar" onclick="cambiarEstado('${d.id}','atendido')">✔️ Atendido</button><button class="btn‑chico btn‑eliminar" onclick="borrarTurno('${d.id}')">🗑️ Eliminar</button></div></div>`;
     });
-  } catch (err) { c.innerHTML=`<p class="sin-datos">❌ ${err.message}</p>`; }
+  }catch(err){c.innerHTML=`<p class="sin‑datos">❌ ${err.message}</p>`;}
 }
 
-async function cambiarEstado(id,est) {
-  const { doc, updateDoc } = Firestore;
-  await updateDoc(doc(db,'turnos',id), {estado:est});
+async function cambiarEstado(id,est){
+  const {doc,updateDoc}=Firestore;
+  await updateDoc(doc(db,'turnos',id),{estado:est});
   cargarTurnos();
 }
 
-async function borrarTurno(id) {
-  if (!confirm('¿Eliminar este turno?')) return;
-  const { doc, deleteDoc } = Firestore;
+async function borrarTurno(id){
+  if(!confirm('¿Eliminar este turno?')) return;
+  const {doc,deleteDoc}=Firestore;
   await deleteDoc(doc(db,'turnos',id));
   cargarTurnos();
 }
 
-async function cargarClientes() {
-  const { collection, getDocs, query, orderBy } = Firestore;
-  const c = document.getElementById('lista-clientes');
-  try {
-    const q = query(collection(db,'clientes'), orderBy('creado','desc'));
-    const s = await getDocs(q);
-    if (s.empty) { c.innerHTML='<p class="sin-datos">No hay clientes aún</p>'; return; }
+async function cargarClientes(){
+  const {collection,getDocs,query,orderBy}=Firestore;
+  const c=document.getElementById('lista‑clientes');
+  try{
+    const q=query(collection(db,'clientes'),orderBy('creado','desc'));
+    const s=await getDocs(q);
+    if(s.empty){c.innerHTML='<p class="sin‑datos">No hay clientes aún</p>';return;}
     c.innerHTML='';
     s.forEach(d=>{
       const x=d.data();
-      c.innerHTML += `<div class="lista-item"><p><strong>${x.nombre}</strong></p><p>📞 ${x.telefono}</p><p>🚗 ${x.vehiculo||'-'}</p><div class="acciones"><button class="btn-chico btn-eliminar" onclick="borrarCliente('${d.id}')">🗑️ Eliminar</button></div></div>`;
+      c.innerHTML+=`<div class="lista‑item"><p><strong>${x.nombre}</strong></p><p>📞 ${x.telefono}</p><p>🚗 ${x.vehiculo||'-'}</p><div class="acciones"><button class="btn‑chico btn‑eliminar" onclick="borrarCliente('${d.id}')">🗑️ Eliminar</button></div></div>`;
     });
-  } catch (err) { c.innerHTML=`<p class="sin-datos">❌ ${err.message}</p>`; }
+  }catch(err){c.innerHTML=`<p class="sin‑datos">❌ ${err.message}</p>`;}
 }
 
-async function guardarCliente() {
-  const { collection, addDoc, serverTimestamp } = Firestore;
-  const n = document.getElementById('cli-nombre').value.trim();
-  const t = document.getElementById('cli-tel').value.trim();
-  const a = document.getElementById('cli-auto').value.trim();
-  if (!n||!t) { alert('Nombre y teléfono obligatorios'); return; }
-  await addDoc(collection(db,'clientes'), {nombre:n, telefono:t, vehiculo:a, creado:serverTimestamp()});
-  document.getElementById('cli-nombre').value=''; document.getElementById('cli-tel').value=''; document.getElementById('cli-auto').value='';
-  await cargarClientes(); await cargarSelectClientes();
+async function guardarCliente(){
+  const {collection,addDoc,serverTimestamp}=Firestore;
+  const n=document.getElementById('cli‑nombre').value.trim();
+  const t=document.getElementById('cli‑tel').value.trim();
+  const a=document.getElementById('cli‑auto').value.trim();
+  if(!n||!t){alert('Nombre y teléfono obligatorios');return;}
+  await addDoc(collection(db,'clientes'),{nombre:n,telefono:t,vehiculo:a,creado:serverTimestamp()});
+  document.getElementById('cli‑nombre').value='';document.getElementById('cli‑tel').value='';document.getElementById('cli‑auto').value='';
+  await cargarClientes();await cargarSelectClientes();
 }
 
-async function borrarCliente(id) {
-  if (!confirm('¿Eliminar este cliente?')) return;
-  const { doc, deleteDoc } = Firestore;
+async function borrarCliente(id){
+  if(!confirm('¿Eliminar este cliente?')) return;
+  const {doc,deleteDoc}=Firestore;
   await deleteDoc(doc(db,'clientes',id));
-  await cargarClientes(); await cargarSelectClientes();
+  await cargarClientes();await cargarSelectClientes();
 }
 
-async function cargarSelectClientes() {
-  const { collection, getDocs, query, orderBy } = Firestore;
-  const s = document.getElementById('orden-cli');
-  const val = s.value;
-  s.innerHTML = '<option value="">-- Elegir cliente --</option>';
-  try {
-    const docs = await getDocs(query(collection(db,'clientes'), orderBy('nombre')));
-    docs.forEach(d=>{
-      const x=d.data();
-      s.innerHTML += `<option value="${d.id}">${x.nombre} — ${x.telefono}</option>`;
-    });
-  } catch {}
-  s.value = val;
+async function cargarSelectClientes(){
+  const {collection,getDocs,query,orderBy}=Firestore;
+  const s=document.getElementById('orden‑cli');
+  const val=s.value;
+  s.innerHTML='<option value="">-- Elegir cliente --</option>';
+  try{
+    const docs=await getDocs(query(collection(db,'clientes'),orderBy('nombre')));
+    docs.forEach(d=>{const x=d.data();s.innerHTML+=`<option value="${d.id}">${x.nombre} — ${x.telefono}</option>`;});
+  }catch{}
+  s.value=val;
 }
 
-async function cargarCliente() {
-  const id = document.getElementById('orden-cli').value;
-  if (!id) {
-    document.getElementById('orden-nombre').value='';
-    document.getElementById('orden-tel').value='';
-    document.getElementById('orden-email').value='';
-    return;
-  }
-  const { doc, getDoc } = Firestore;
-  const d = await getDoc(doc(db,'clientes',id));
-  if (d.exists()) {
+async function cargarCliente(){
+  const id=document.getElementById('orden‑cli').value;
+  if(!id){document.getElementById('orden‑nombre').value='';document.getElementById('orden‑tel').value='';document.getElementById('orden‑email').value='';return;}
+  const {doc,getDoc}=Firestore;
+  const d=await getDoc(doc(db,'clientes',id));
+  if(d.exists()){
     const x=d.data();
-    document.getElementById('orden-nombre').value = x.nombre||'';
-    document.getElementById('orden-tel').value = x.telefono||'';
-    document.getElementById('orden-email').value = x.email||'';
-    if (x.vehiculo) {
-      const partes = x.vehiculo.split(' ');
-      document.getElementById('marca').value = partes[0]||'';
-      document.getElementById('modelo').value = partes.slice(1).join(' ')||'';
-    }
+    document.getElementById('orden‑nombre').value=x.nombre||'';
+    document.getElementById('orden‑tel').value=x.telefono||'';
+    document.getElementById('orden‑email').value=x.email||'';
+    if(x.vehiculo){const partes=x.vehiculo.split(' ');document.getElementById('marca').value=partes[0]||'';document.getElementById('modelo').value=partes.slice(1).join(' ')||'';}
   }
 }
 
-async function generarOrden() {
-  const folio = document.getElementById('folio').value.trim() || 'S/N';
-  const marca = document.getElementById('marca').value.trim();
-  const modelo = document.getElementById('modelo').value.trim();
-  const color = document.getElementById('color').value.trim();
-  const km = document.getElementById('km').value.trim();
-  const placa = document.getElementById('placa').value.trim();
-  const nserie = document.getElementById('nserie').value.trim();
-  const fechaIng = document.getElementById('fecha-ingreso').value;
-  const fechaSal = document.getElementById('fecha-salida').value || 'PENDIENTE';
-  const grua = document.getElementById('grua').checked ? 'SI' : 'NO';
-  const siem = document.getElementById('siem').checked ? 'SI' : 'NO';
-  const nombre = document.getElementById('orden-nombre').value.trim();
-  const tel = document.getElementById('orden-tel').value.trim();
-  const email = document.getElementById('orden-email').value.trim() || '---';
-  const obs = document.getElementById('obs').value.trim();
-  const tieneIVA = document.getElementById('chk-iva').checked;
-
-  if (!marca||!nombre||!tel) { alert('Completá Marca, Nombre y Teléfono'); return; }
-
-  const filas = []; let total=0;
-  document.querySelectorAll('#cuerpo-tabla tr').forEach(f=>{
-    const idBase = f.querySelector('[id^=cant-]')?.id?.replace('cant-','');
-    if (!idBase) return;
-    const c = parseFloat(document.getElementById(`cant-${idBase}`).value)||0;
-    const d = document.getElementById(`desc-${idBase}`).value.trim();
-    const p = parseFloat(document.getElementById(`prec-${idBase}`).value)||0;
-    if (d||p) { const subt = c*p; filas.push({cant:c, desc:d, precio:p, subtotal:subt}); total += subt; }
+async function cargarOrdenesLista(){
+  const {collection,getDocs,query,orderBy}=Firestore;
+  const caja=document.getElementById('lista‑ordenes');
+  caja.innerHTML='<p class="cargando">Cargando órdenes…</p>';
+  const snap=await getDocs(query(collection(db,'ordenes'),orderBy('creado','desc')));
+  if(snap.empty){caja.innerHTML='<p class="sin‑datos">Sin órdenes registradas</p>';return;}
+  caja.innerHTML='';
+  snap.forEach(d=>{
+    const o=d.data();
+    caja.innerHTML+=`<div class="lista‑item"><strong>Folio: ${o.folio||'‑'}</strong><br>Cliente: ${o.nombreCliente||'‑'}<br>Vehículo: ${o.marca||''} ${o.modelo||''}<br>Total: $${(o.total||0).toFixed(2).replace('.',',')}<div class="acciones"><button class="btn‑chico btn‑editar" onclick="cargarOrdenParaEditar('${d.id}')">✏️ Editar</button><button class="btn‑chico btn‑eliminar" onclick="borrarOrden('${d.id}')">🗑️ Eliminar</button></div></div>`;
   });
+}
 
-  const invChecks = document.querySelectorAll('.inv-chk:checked');
-  const inventario = invChecks.length ? [...invChecks].map(cb=>cb.parentElement.textContent.trim()).join(' · ') : 'Ninguno';
-  const detalle = filas.map(f=>`${f.cant} x ${f.desc} — $${f.subtotal.toFixed(2).replace('.',',')}`).join('\n');
+async function cargarOrdenParaEditar(id){
+  const {doc,getDoc}=Firestore;
+  const ref=doc(db,'ordenes',id);
+  const d=await getDoc(ref);
+  if(!d.exists()){alert('Orden no encontrada');return;}
+  const o=d.data();
+  idOrdenEnEdicion=id;
+  document.getElementById('folio').value=o.folio||'';
+  document.getElementById('marca').value=o.marca||'';
+  document.getElementById('modelo').value=o.modelo||'';
+  document.getElementById('color').value=o.color||'';
+  document.getElementById('km').value=o.km||'';
+  document.getElementById('placa').value=o.placa||'';
+  document.getElementById('nserie').value=o.nserie||'';
+  document.getElementById('fecha‑ingreso').value=o.fechaIngreso||'';
+  document.getElementById('fecha‑salida').value=o.fechaSalida||'';
+  document.getElementById('grua').checked=(o.grua==='SI');
+  document.getElementById('siem').checked=(o.siem==='SI');
+  document.getElementById('orden‑nombre').value=o.nombreCliente||'';
+  document.getElementById('orden‑tel').value=o.telefonoCliente||'';
+  document.getElementById('orden‑email').value=o.emailCliente||'';
+  document.getElementById('obs').value=o.observaciones||'';
+  document.getElementById('chk‑iva').checked=!!o.iva;
+  alert('Orden cargada para editar, modificá y guardá');
+  mostrar('orden');
+}
 
-  const ordenTexto = `═══════════════════════════════
+async function borrarOrden(id){
+  if(!confirm('¿Seguro querés eliminar esta orden?')) return;
+  const {doc,deleteDoc}=Firestore;
+  await deleteDoc(doc(db,'ordenes',id));
+  alert('Orden eliminada');
+  cargarOrdenesLista();
+}
+
+function irNuevaOrden(){
+  idOrdenEnEdicion=null;
+  document.getElementById('folio').value='';
+  document.getElementById('marca').value='';document.getElementById('modelo').value='';document.getElementById('color').value='';
+  document.getElementById('km').value='';document.getElementById('placa').value='';document.getElementById('nserie').value='';
+  document.getElementById('fecha‑ingreso').valueAsDate=new Date();
+  document.getElementById('fecha‑salida').value='';
+  document.getElementById('grua').checked=false;document.getElementById('siem').checked=false;
+  document.getElementById('orden‑nombre').value='';document.getElementById('orden‑tel').value='';document.getElementById('orden‑email').value='';
+  document.getElementById('obs').value='';document.getElementById('chk‑iva').checked=false;
+  document.getElementById('cuerpo‑tabla').innerHTML='';filaIndice=0;agregarFila();actualizarTotal();
+  mostrar('orden');
+}
+
+async function guardarOActualizarOrden(){
+  const folio=document.getElementById('folio').value.trim()||'S/N';
+  const marca=document.getElementById('marca').value.trim();
+  const modelo=document.getElementById('modelo').value.trim();
+  const color=document.getElementById('color').value.trim();
+  const km=document.getElementById('km').value.trim();
+  const placa=document.getElementById('placa').value.trim();
+  const nserie=document.getElementById('nserie').value.trim();
+  const fechaIng=document.getElementById('fecha‑ingreso').value;
+  const fechaSal=document.getElementById('fecha‑salida').value||'PENDIENTE';
+  const grua=document.getElementById('grua').checked?'SI':'NO';
+  const siem=document.getElementById('siem').checked?'SI':'NO';
+  const nombre=document.getElementById('orden‑nombre').value.trim();
+  const tel=document.getElementById('orden‑tel').value.trim();
+  const email=document.getElementById('orden‑email').value.trim()||'---';
+  const obs=document.getElementById('obs').value.trim();
+  const tieneIVA=document.getElementById('chk‑iva').checked;
+  if(!marca||!nombre||!tel){alert('Completá Marca, Nombre y Teléfono');return;}
+  const filas=[];let total=0;
+  document.querySelectorAll('#cuerpo‑tabla tr').forEach(f=>{
+    const idBase=f.querySelector('[id^=cant‑]')?.id?.replace('cant‑','');
+    if(!idBase) return;
+    const c=parseFloat(document.getElementById(`cant‑${idBase}`).value)||0;
+    const d=document.getElementById(`desc‑${idBase}`).value.trim();
+    const p=parseFloat(document.getElementById(`prec‑${idBase}`).value)||0;
+    if(d||p){const subt=c*p;filas.push({cant:c,desc:d,precio:p,subtotal:subt});total+=subt;}
+  });
+  const invChecks=document.querySelectorAll('.inv‑chk:checked');
+  const inventario=invChecks.length?[...invChecks].map(cb=>cb.parentElement.textContent.trim()).join(' · '):'Ninguno';
+  const detalle=filas.map(f=>`${f.cant} x ${f.desc} — $${f.subtotal.toFixed(2).replace('.',',')}`).join('\n');
+  const ordenTexto=`═══════════════════════════════
 ORDEN DE SERVICIO — AUTO REGINA
 ═══════════════════════════════
 FOLIO: ${folio}
@@ -673,34 +726,28 @@ ${inventario}
 ═══════════════════════════════
 AUTO REGINA — Servicio Mecánico
 ═══════════════════════════════`;
-
-  const { collection, addDoc, serverTimestamp } = Firestore;
-  await addDoc(collection(db,'ordenes'), {
-    folio, marca, modelo, color, km, placa, nserie,
-    fechaIngreso: fechaIng, fechaSalida: fechaSal, grua, siem,
-    nombreCliente: nombre, telefonoCliente: tel, emailCliente: email,
-    trabajos: filas, observaciones: obs, inventario,
-    iva: tieneIVA, total, creado: serverTimestamp()
-  });
-
-  document.getElementById('texto-orden').textContent = ordenTexto;
-  document.getElementById('caja-orden').classList.remove('oculto');
+  const {collection,addDoc,doc,updateDoc,serverTimestamp}=Firestore;
+  const datosOrden={folio,marca,modelo,color,km,placa,nserie,fechaIngreso:fechaIng,fechaSalida:fechaSal,grua,siem,nombreCliente:nombre,telefonoCliente:tel,emailCliente:email,trabajos:filas,observaciones:obs,inventario,iva:tieneIVA,total,esPrueba:false};
+  if(idOrdenEnEdicion){
+    await updateDoc(doc(db,'ordenes',idOrdenEnEdicion),{...datosOrden,actualizado:serverTimestamp()});
+    alert('Orden actualizada');
+  }else{
+    await addDoc(collection(db,'ordenes'),{...datosOrden,creado:serverTimestamp()});
+    alert('Nueva orden guardada');
+  }
+  document.getElementById('texto‑orden').textContent=ordenTexto;
+  document.getElementById('caja‑orden').classList.remove('oculto');
+  idOrdenEnEdicion=null;
+  cargarOrdenesLista();
 }
 
-async function copiarOrden() {
-  const texto = document.getElementById('texto-orden').textContent;
-  const btn = document.getElementById('btn-copiar-orden');
-  try {
-    await navigator.clipboard.writeText(texto);
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN'; btn.classList.remove('btn-copiado');},3000);
-  } catch {
-    const area = document.getElementById('area-copiado');
-    area.value=texto; area.select(); document.execCommand('copy');
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN'; btn.classList.remove('btn-copiado');},3000);
-  }
+async function copiarOrden(){
+  const texto=document.getElementById('texto‑orden').textContent;
+  const btn=document.getElementById('btn‑copiar‑orden');
+  try{await navigator.clipboard.writeText(texto);btn.textContent='✅ COPIADO';btn.classList.add('btn‑copiado');setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN';btn.classList.remove('btn‑copiado');},3000);}
+  catch{const area=document.getElementById('area‑copiado');area.value=texto;area.select();document.execCommand('copy');btn.textContent='✅ COPIADO';btn.classList.add('btn‑copiado');setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN';btn.classList.remove('btn‑copiado');},3000);}
 }
 </script>
 </body>
 </html>
+     
