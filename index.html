@@ -111,7 +111,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 </head>
 <body>
 <textarea id="area-copiado" class="area-copiado"></textarea>
-
 <div id="pantalla-cliente">
 <div class="cabecera">
 <h1>AUTO REGINA</h1>
@@ -153,7 +152,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 </div>
 <button class="acceso-taller" onclick="abrirAcceso()">🔧 Acceso del Taller</button>
 </div>
-
 <div class="modal" id="modal-acceso">
 <div class="modal-caja">
 <h3 style="text-align:center;color:#0F2B48;">🔧 ACCESO TALLER</h3>
@@ -163,7 +161,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <p class="error" id="error-clave">Contraseña incorrecta</p>
 </div>
 </div>
-
 <div id="pantalla-taller" class="oculto">
 <div class="cabecera">
 <h1>AUTO REGINA — TALLER</h1>
@@ -182,7 +179,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <h2>📋 Turnos Recibidos</h2>
 <div id="lista-turnos"><p class="cargando">Cargando...</p></div>
 </div>
-
 <div id="sec-clientes" class="oculto">
 <h2>👥 Clientes</h2>
 <div class="form-seccion">
@@ -195,7 +191,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <h3>📂 Lista de Clientes</h3>
 <div id="lista-clientes"><p class="cargando">Cargando...</p></div>
 </div>
-
 <div id="sec-orden" class="oculto">
 <h2>📝 Orden de Servicio</h2>
 <div class="form-seccion">
@@ -293,7 +288,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 </div>
 </div>
 </div>
-
 <div id="sec‑lista‑ordenes" class="oculto">
 <h2>📑 Órdenes Guardadas</h2>
 <button class="btn‑nueva‑orden" onclick="irNuevaOrden()">➕ Crear nueva orden</button>
@@ -326,7 +320,6 @@ const API_KEY = 'sk‑or‑v1‑20107d1000bb776b707f6157ccb9ce3a9e4aa0617b96bec3
 let filaIndice = 0;
 let historialConversacion = [];
 let idOrdenEnEdicion = null;
-
 function actualizarTotal() {
   let total = 0;
   document.querySelectorAll('#cuerpo‑tabla tr').forEach(fila => {
@@ -341,7 +334,6 @@ function actualizarTotal() {
   });
   document.getElementById('total‑general').textContent = total.toFixed(2).replace('.',',');
 }
-
 function agregarFila() {
   const cuerpo = document.getElementById('cuerpo‑tabla');
   const id = filaIndice++;
@@ -350,7 +342,6 @@ function agregarFila() {
   cuerpo.appendChild(fila);
   actualizarTotal();
 }
-
 async function asegurarCliente(nombre, telefono, vehiculo) {
   const { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimestamp } = Firestore;
   const q = query(collection(db, 'clientes'), where('telefono','==',telefono));
@@ -362,7 +353,6 @@ async function asegurarCliente(nombre, telefono, vehiculo) {
     await updateDoc(d.ref, {nombre, vehiculo: vehiculo||'', actualizado: serverTimestamp()});
   }
 }
-
 async function llamarIA(mensaje) {
   const { collection, getDocs, query, orderBy } = Firestore;
   const consulta = mensaje.toLowerCase();
@@ -452,7 +442,6 @@ function salir(){
   document.getElementById('pantalla‑cliente').classList.remove('oculto');
   document.getElementById('clave').value='';
 }
-
 function mostrar(nombre){
   document.querySelectorAll('.pestaña').forEach(p=>{
     const coincide=p.textContent.trim().toLowerCase().includes(nombre);
@@ -464,7 +453,6 @@ function mostrar(nombre){
   });
   if(nombre==='lista‑ordenes') cargarOrdenesLista();
 }
-
 async function generarTurno(){
   const fecha=document.getElementById('fecha').value;
   const horario=document.getElementById('horario').value;
@@ -489,21 +477,18 @@ async function generarTurno(){
   document.getElementById('texto‑turno').textContent=mensaje;
   document.getElementById('caja‑turno').classList.remove('oculto');
 }
-
 async function copiarTurno(){
   const texto=document.getElementById('texto‑turno').textContent;
   const btn=document.getElementById('btn‑copiar‑turno');
   try{await navigator.clipboard.writeText(texto);btn.textContent='✅ COPIADO';btn.classList.add('btn‑copiado');setTimeout(()=>{btn.textContent='📋 TOCÁ ACÁ PARA COPIAR';btn.classList.remove('btn‑copiado');},3000);}
   catch{const area=document.getElementById('area‑copiado');area.value=texto;area.select();document.execCommand('copy');btn.textContent='✅ COPIADO';btn.classList.add('btn‑copiado');setTimeout(()=>{btn.textContent='📋 TOCÁ ACÁ PARA COPIAR';btn.classList.remove('btn‑copiado');},3000);}
 }
-
 async function iniciarTodo(){
   await Promise.all([cargarTurnos(),cargarClientes(),cargarSelectClientes()]);
   document.getElementById('fecha‑ingreso').valueAsDate=new Date();
   if(!document.querySelectorAll('#cuerpo‑tabla tr').length) agregarFila();
   actualizarTotal();
 }
-
 async function cargarTurnos(){
   const {collection,getDocs,query,orderBy}=Firestore;
   const c=document.getElementById('lista‑turnos');
@@ -519,20 +504,17 @@ async function cargarTurnos(){
     });
   }catch(err){c.innerHTML=`<p class="sin‑datos">❌ ${err.message}</p>`;}
 }
-
 async function cambiarEstado(id,est){
   const {doc,updateDoc}=Firestore;
   await updateDoc(doc(db,'turnos',id),{estado:est});
   cargarTurnos();
 }
-
 async function borrarTurno(id){
   if(!confirm('¿Eliminar este turno?')) return;
   const {doc,deleteDoc}=Firestore;
   await deleteDoc(doc(db,'turnos',id));
   cargarTurnos();
 }
-
 async function cargarClientes(){
   const {collection,getDocs,query,orderBy}=Firestore;
   const c=document.getElementById('lista‑clientes');
@@ -547,7 +529,6 @@ async function cargarClientes(){
     });
   }catch(err){c.innerHTML=`<p class="sin‑datos">❌ ${err.message}</p>`;}
 }
-
 async function guardarCliente(){
   const {collection,addDoc,serverTimestamp}=Firestore;
   const n=document.getElementById('cli‑nombre').value.trim();
@@ -565,7 +546,6 @@ async function borrarCliente(id){
   await deleteDoc(doc(db,'clientes',id));
   await cargarClientes();await cargarSelectClientes();
 }
-
 async function cargarSelectClientes(){
   const {collection,getDocs,query,orderBy}=Firestore;
   const s=document.getElementById('orden‑cli');
@@ -577,7 +557,6 @@ async function cargarSelectClientes(){
   }catch{}
   s.value=val;
 }
-
 async function cargarCliente(){
   const id=document.getElementById('orden‑cli').value;
   if(!id){document.getElementById('orden‑nombre').value='';document.getElementById('orden‑tel').value='';document.getElementById('orden‑email').value='';return;}
@@ -591,7 +570,6 @@ async function cargarCliente(){
     if(x.vehiculo){const partes=x.vehiculo.split(' ');document.getElementById('marca').value=partes[0]||'';document.getElementById('modelo').value=partes.slice(1).join(' ')||'';}
   }
 }
-
 async function cargarOrdenesLista(){
   const {collection,getDocs,query,orderBy}=Firestore;
   const caja=document.getElementById('lista‑ordenes');
@@ -604,7 +582,6 @@ async function cargarOrdenesLista(){
     caja.innerHTML+=`<div class="lista‑item"><strong>Folio: ${o.folio||'‑'}</strong><br>Cliente: ${o.nombreCliente||'‑'}<br>Vehículo: ${o.marca||''} ${o.modelo||''}<br>Total: $${(o.total||0).toFixed(2).replace('.',',')}<div class="acciones"><button class="btn‑chico btn‑editar" onclick="cargarOrdenParaEditar('${d.id}')">✏️ Editar</button><button class="btn‑chico btn‑eliminar" onclick="borrarOrden('${d.id}')">🗑️ Eliminar</button></div></div>`;
   });
 }
-
 async function cargarOrdenParaEditar(id){
   const {doc,getDoc}=Firestore;
   const ref=doc(db,'ordenes',id);
@@ -639,7 +616,6 @@ async function borrarOrden(id){
   alert('Orden eliminada');
   cargarOrdenesLista();
 }
-
 function irNuevaOrden(){
   idOrdenEnEdicion=null;
   document.getElementById('folio').value='';
@@ -653,7 +629,6 @@ function irNuevaOrden(){
   document.getElementById('cuerpo‑tabla').innerHTML='';filaIndice=0;agregarFila();actualizarTotal();
   mostrar('orden');
 }
-
 async function guardarOActualizarOrden(){
   const folio=document.getElementById('folio').value.trim()||'S/N';
   const marca=document.getElementById('marca').value.trim();
@@ -690,7 +665,6 @@ ORDEN DE SERVICIO — AUTO REGINA
 FOLIO: ${folio}
 Juan Rotter 316 · Villa Regina
 Tel: 2984548329
-
 ── DATOS DEL VEHÍCULO ──
 Marca: ${marca}
 Modelo: ${modelo||'---'}
@@ -707,21 +681,16 @@ S.I.E.M.: ${siem}
 Nombre: ${nombre}
 Teléfono: ${tel}
 Email: ${email}
-
 ── TRABAJOS ──
 ${detalle||'Sin registrar'}
-
 ${tieneIVA?'I.V.A. incluido':'I.V.A. no incluido'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TOTAL: $${total.toFixed(2).replace('.',',')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 ── OBSERVACIONES ──
 ${obs||'Sin observaciones'}
-
 ── INVENTARIO ──
 ${inventario}
-
 ═══════════════════════════════
 AUTO REGINA — Servicio Mecánico
 ═══════════════════════════════`;
@@ -739,7 +708,6 @@ AUTO REGINA — Servicio Mecánico
   idOrdenEnEdicion=null;
   cargarOrdenesLista();
 }
-
 async function copiarOrden(){
   const texto=document.getElementById('texto‑orden').textContent;
   const btn=document.getElementById('btn‑copiar‑orden');
