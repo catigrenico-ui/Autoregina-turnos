@@ -8,12 +8,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, where, getDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 const firebaseConfig = {
-apiKey: "AIzaSyAPKOuYBpHuqyEVNJOENPUH1113OBvykyk",
-authDomain: "autoregina.firebaseapp.com",
-projectId: "autoregina",
-storageBucket: "autoregina.firebasestorage.app",
-messagingSenderId: "525939629424",
-appId: "1:525939629424:web:2a609a232758782859c3b5"
+  apiKey: "AIzaSyAPKOuYBpHuqyEVNJOENPUH1113OBvykyk",
+  authDomain: "autoregina.firebaseapp.com",
+  projectId: "autoregina",
+  storageBucket: "autoregina.firebasestorage.app",
+  messagingSenderId: "525939629424",
+  appId: "1:525939629424:web:2a609a232758782859c3b5"
 };
 const app = initializeApp(firebaseConfig);
 window.db = getFirestore(app);
@@ -22,585 +22,614 @@ window.Firestore = { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, que
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Roboto,Arial,sans-serif;}
 body{background:#F0F4FC;min-height:100vh;padding:16px;max-width:720px;margin:0 auto;padding-bottom:40px;}
-.cabecera{background:linear-gradient(180deg,#0F2B5C 0%,#0F2B48 100%);color:white;padding:24px 20px;border-radius:20px;text-align:center;margin-bottom:16px;}
-.cabecera h1{font-size:22px;margin-bottom:6px;}
-.servicios{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;font-size:13px;color:#F5D76E;font-weight:600;}
+.cabecera{text-align:center;margin-bottom:16px;}
+h1{font-size:22px;}
 .aviso{background:#FFF7E0;border:2px solid #F59E0B;border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;}
-.numero-grande{font-size:20px;font-weight:900;color:#B45309;margin:6px 0;letter-spacing:1px;}
+.numero-grande{font-size:20px;font-weight:900;color:#B45309;}
 .pestañas{display:flex;gap:8px;margin-bottom:24px;overflow-x:auto;}
 .pestaña{padding:10px 14px;border-radius:12px;font-weight:700;font-size:13px;white-space:nowrap;cursor:pointer;border:none;}
 .pestaña.activa{background:#0F2B48;color:white;}
 .pestaña.inactiva{background:white;color:#64748B;}
-.pestaña.salir{background:#FEE2E2;color:#B91C1C;margin-left:auto;}
 .form-seccion{background:white;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(15,43,72,.08);}
-h2{font-size:20px;font-weight:800;color:#0F2B48;margin-bottom:16px;}
-h3{font-size:16px;font-weight:700;color:#0F2B48;margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid #0F2B48;}
-label{display:block;margin:10px 0 4px;font-weight:600;color:#334155;font-size:13px;}
-input,select,textarea{width:100%;padding:10px 12px;border:1px solid #CBD5E1;border-radius:6px;font-size:14px;background:#FAFCFF;}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
+h2{font-size:16px;margin-bottom:14px;color:#0F2B48;}
+label{display:block;margin-bottom:6px;font-weight:600;color:#334155;font-size:13px;}
+input, select, textarea{width:100%;padding:10px;border:1px solid #CBD5E1;border-radius:8px;outline:none;}
 .fila{display:flex;gap:10px;flex-wrap:wrap;}
-.fila>div{flex:1;min-width:100px;}
-.fila-3{display:flex;gap:8px;flex-wrap:wrap;}
-.fila-3>div{flex:1;min-width:110px;}
+.fila>div{flex:1;min-width:140px;}
 .btn-principal{width:100%;background:#0F2B48;color:white;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:800;margin-top:20px;cursor:pointer;}
 .btn-copiar{width:100%;background:#10B981;color:white;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:700;margin-top:16px;cursor:pointer;transition:all .2s;}
-.btn-copiar:active{transform:scale(.98);}
-.btn-copiado{background:#059669 !important;}
 .btn-chico{padding:8px 12px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin:4px;}
-.btn-guardar{background:#10B981;color:white;}
 .btn-eliminar{background:#FEE2E2;color:#B91C1C;}
 .btn-editar{background:#DBEAFE;color:#1E40AF;}
-.acceso-taller{width:100%;background:transparent;color:#0F2B48;border:2px solid #0F2B48;padding:14px;border-radius:12px;font-size:15px;font-weight:700;margin-top:20px;cursor:pointer;}
-.modal{position:fixed;inset:0;background:rgba(15,43,72,.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;}
-.modal-caja{background:white;padding:24px;border-radius:16px;width:100%;max-width:340px;}
-.modal-caja button{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:700;margin-top:10px;cursor:pointer;}
-.btn-ingresar{background:#0F2B48;color:white;}
-.btn-volver{background:#E5E7EB;color:#374151;}
-.error{color:#EF4444;text-align:center;margin-top:12px;display:none;}
-.vista-previa{background:white;border:2px solid #0F52BA;border-radius:16px;padding:20px;margin-top:20px;white-space:pre-wrap;font-size:12px;line-height:1.5;}
 .oculto{display:none !important;}
-.lista-item{background:white;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-.sin-datos{text-align:center;padding:30px;color:#64748B;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;}
+.modal-caja{background:white;padding:24px;border-radius:16px;width:90%;max-width:340px;}
+.btn-ingresar{background:#0F2B48;color:white;width:100%;}
+.error{background:#E5E7EB;color:#374151;display:none;}
+.vista-previa{background:white;border:2px solid #0F52BA;border-radius:16px;padding:20px;margin-top:20px;white-space:pre-wrap;font-size:12px;line-height:1.5;}
+.sin-datos{text-align:center;color:#64748B;padding:30px;}
+.item-datos{background:white;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .acciones{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;}
-.area-copiado{position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none;}
-.orden-cabecera{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0F52BA;padding-bottom:12px;margin-bottom:12px;}
-.orden-logo{text-align:center;flex:1;}
-.orden-logo h2{margin:0 0 4px 0;font-size:18px;color:#0F52BA;}
-.orden-dir{font-size:12px;color:#333;line-height:1.4;}
-.orden-folio{text-align:right;min-width:140px;}
-.orden-folio label{font-weight:700;color:#0F52BA;}
-.orden-folio input{text-align:right;font-weight:700;border:none;border-bottom:1px solid #999;background:transparent;}
-.seccion-datos{border:1px solid #CBD5E1;border-radius:8px;padding:14px;margin-bottom:14px;}
-.seccion-titulo{background:#0F52BA;color:white;padding:8px 14px;font-weight:700;border-radius:6px 6px 0 0;margin:-14px -14px 12px -14px;}
+.orden-cabecera{display:flex;justify-content:space-between;align-items:flex-start;}
+.orden-folio{font-weight:700;color:#0F52BA;}
+.orden-datos{margin-top:12px;}
 .tabla-trabajos{width:100%;border-collapse:collapse;margin:12px 0;}
-.tabla-trabajos th,.tabla-trabajos td{border:1px solid #CBD5E1;padding:8px 6px;font-size:13px;}
-.tabla-trabajos th{background:#0F52BA;color:white;font-weight:700;}
+.tabla-trabajos th{background:#0F52BA;color:white;font-weight:500;text-align:left;padding:8px 6px;font-size:13px;}
+.tabla-trabajos td{border-bottom:1px solid #CBD5E1;padding:8px 6px;font-size:13px;}
 .tabla-trabajos .cant{width:15%;text-align:center;}
-.tabla-trabajos .desc{width:50%;}
+.tabla-trabajos .desc{width:50%;text-align:left;}
 .tabla-trabajos .precio{width:20%;text-align:right;}
 .tabla-trabajos .importe{width:15%;text-align:right;font-weight:bold;color:#0F52BA;}
 .tabla-trabajos input{border:1px solid #E2E8F0;background:#FAFCFF;padding:6px;width:100%;font-size:14px;border-radius:4px;}
-.fila-total{background:#E6F0FA;font-weight:800;font-size:18px;color:#0F52BA;}
-.fila-total td{border:none;padding:12px 8px;text-align:right;}
+.fila-total{background:#E6F0FA;font-weight:800;font-size:14px;color:#0F52BA;}
 .fila-iva{font-size:13px;color:#333;}
-.fila-iva input{width:auto;margin-left:6px;}
 .inventario-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:10px;}
 .inv-item{display:flex;align-items:center;gap:6px;font-size:13px;}
-.inv-item input{width:auto;}
 .check-linea{display:flex;align-items:center;gap:6px;margin:6px 0;}
 .cargando{text-align:center;padding:20px;color:#165DFF;font-weight:600;}
-.estado{display:inline-block;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700;}
 .estado-pendiente{background:#FEF3C7;color:#92400E;}
 .estado-confirmado{background:#DBEAFE;color:#1E40AF;}
 .estado-atendido{background:#D1FAE5;color:#065F46;}
-.aviso-exito{background:#D1FAE5;border:2px solid #10B981;border-radius:12px;padding:12px;text-align:center;margin-top:12px;color:#065F46;font-weight:600;}
-.btn-agregar-fila{background:#E0F2FE;color:#0C4A6E;border:none;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;margin:10px 0;}
+.aviso-exito{background:#D1FAE5;border:2px solid #10B981;border-radius:12px;padding:12px;text-align:center;margin-top:12px;}
+.btn-agregar-fila{background:#0F2B48;color:white;border:none;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;margin:10px 0;}
 </style>
 </head>
 <body>
 <textarea id="area-copiado" class="area-copiado"></textarea>
 
-<div id="pantalla-cliente">
-<div class="cabecera">
-<h1>AUTO REGINA</h1>
-<div class="servicios"><span>⚙️ Mecánica</span><span>⚡ Electricidad</span><span>🖥️ Inyección</span></div>
-</div>
-<div class="aviso">
-<p>📞 <strong>ANTES DE PEDIR TU TURNO:</strong></p>
-<p>1️⃣ Guardá: <span class="numero-grande">+54 9 2984 54-8329</span></p>
-<p>2️⃣ Completá tus datos abajo 👇</p>
-<p>3️⃣ Tocá el botón para copiar y mandalo por WhatsApp</p>
-</div>
-<div class="form-seccion">
-<h2 style="text-align:center;">📅 Pedí tu Turno</h2>
-<label>Fecha</label><input type="date" id="fecha">
-<label>Horario</label>
-<select id="horario"><option value="">Seleccioná</option><option>Mañana — 09:00 a 12:00</option><option>Tarde — 15:00 a 18:00</option></select>
-<label>Tu Nombre</label><input type="text" id="nombre" placeholder="Nombre y Apellido">
-<label>Teléfono / WhatsApp</label><input type="tel" id="telefono" placeholder="2984 548329">
-<label>Vehículo</label><input type="text" id="vehiculo" placeholder="Marca, modelo, año">
-<label>Servicio</label>
-<select id="servicio">
-<option value="">Seleccioná</option>
-<option>Mecánica General</option>
-<option>Electricidad</option>
-<option>Inyección Electrónica</option>
-<option>Revisión / Mantenimiento</option>
-<option>Cambio de aceite</option>
-<option>Frenos / Embrague</option>
-<option>Diagnóstico / Escaneo</option>
-<option>Otros</option>
-</select>
-<button class="btn-principal" onclick="generarTurno()">✅ GENERAR TURNO</button>
-<div id="caja-turno" class="oculto">
-<div class="aviso-exito">✅ ¡Listo! Mensaje generado</div>
-<div class="vista-previa" id="texto-turno"></div>
-<button id="btn-copiar-turno" class="btn-copiar" onclick="copiarTurno()">📋 TOCÁ ACÁ PARA COPIAR</button>
-<p style="text-align:center;margin:12px 0;color:#10B981;font-weight:bold;">👇 Pegalo en WhatsApp y mandalo</p>
-</div>
-</div>
-<button class="acceso-taller" onclick="abrirAcceso()">🔧 Acceso del Taller</button>
+<div id="pantalla-ingreso">
+  <div class="form-seccion">
+    <h2>🔐 Acceso del Taller</h2>
+    <label for="clave-acceso">Ingresar clave de acceso</label>
+    <input type="password" id="clave-acceso" placeholder="Escribí la clave">
+    <button class="btn-principal btn-ingresar" onclick="ingresar()">Ingresar</button>
+    <p id="error-acceso" class="error">Clave incorrecta</p>
+  </div>
 </div>
 
-<div class="modal" id="modal-acceso">
-<div class="modal-caja">
-<h3 style="text-align:center;color:#0F2B48;">🔧 ACCESO TALLER</h3>
-<label>Contraseña</label><input type="password" id="clave" placeholder="Escribí la contraseña">
-<button class="btn-ingresar" onclick="ingresar()">INGRESAR</button>
-<button class="btn-volver" onclick="cerrarAcceso()">Volver</button>
-<p class="error" id="error-clave">Contraseña incorrecta</p>
-</div>
-</div>
+<div id="pantalla-principal" class="oculto">
+  <div class="cabecera">
+    <h1>AUTO REGINA</h1>
+    <p>Turnos y Servicios</p>
+  </div>
 
-<div id="pantalla-taller" class="oculto">
-<div class="cabecera">
-<h1>AUTO REGINA — TALLER</h1>
-<div class="servicios"><span>⚙️ Mecánica</span><span>⚡ Electricidad</span><span>🖥️ Inyección</span></div>
-</div>
-<div class="pestañas">
-<button class="pestaña activa" onclick="mostrar('turnos')">📋 Turnos</button>
-<button class="pestaña inactiva" onclick="mostrar('clientes')">👥 Clientes</button>
-<button class="pestaña inactiva" onclick="mostrar('orden')">📝 Orden</button>
-<button class="pestaña salir" onclick="salir()">🚪 Salir</button>
-</div>
+  <div class="pestañas">
+    <button class="pestaña activa" onclick="mostrar('turnos')">📅 Turnos</button>
+    <button class="pestaña inactiva" onclick="mostrar('clientes')">👥 Clientes</button>
+    <button class="pestaña inactiva" onclick="mostrar('orden')">📝 Nueva Orden</button>
+    <button class="pestaña inactiva" onclick="mostrar('lista-ordenes')">📋 Órdenes Guardadas</button>
+    <button class="pestaña inactiva" onclick="salir()">🚪 Salir</button>
+  </div>
 
-<div id="sec-turnos">
-<h2>📋 Turnos Recibidos</h2>
-<div id="lista-turnos"><p class="cargando">Cargando...</p></div>
-</div>
+  <div id="sec-turnos" class="form-seccion">
+    <h2>📅 Turnos Agendados</h2>
+    <div id="lista-turnos"><p class="sin-datos">Cargando...</p></div>
+    <hr style="margin:20px 0;border:none;border-top:1px solid #CBD5E1;">
+    <h3 style="margin-bottom:12px;">Agendar nuevo turno</h3>
+    <label>Fecha</label>
+    <input type="date" id="turno-fecha">
+    <label>Hora</label>
+    <input type="time" id="turno-hora">
+    <label>Nombre / Cliente</label>
+    <input type="text" id="turno-nombre" placeholder="Nombre del cliente">
+    <label>Teléfono</label>
+    <input type="tel" id="turno-telefono" placeholder="Teléfono">
+    <label>Notas / Servicio</label>
+    <input type="text" id="turno-notas" placeholder="Qué servicio necesita">
+    <button class="btn-principal" onclick="guardarTurno()">Guardar Turno</button>
+  </div>
 
-<div id="sec-clientes" class="oculto">
-<h2>👥 Clientes</h2>
-<div class="form-seccion">
-<h3>Agregar Cliente</h3>
-<label>Nombre *</label><input type="text" id="cli-nombre" placeholder="Nombre y Apellido">
-<label>Teléfono *</label><input type="tel" id="cli-tel" placeholder="2984 548329">
-<label>Vehículo</label><input type="text" id="cli-auto" placeholder="Marca, modelo, año">
-<div class="fila"><button class="btn-guardar" onclick="guardarCliente()">✅ GUARDAR</button></div>
-</div>
-<h3>📂 Lista de Clientes</h3>
-<div id="lista-clientes"><p class="cargando">Cargando...</p></div>
-</div>
+  <div id="sec-clientes" class="form-seccion oculto">
+    <h2>👥 Clientes</h2>
+    <div id="lista-clientes"><p class="sin-datos">Cargando...</p></div>
+    <hr style="margin:20px 0;border:none;border-top:1px solid #CBD5E1;">
+    <h3 style="margin-bottom:12px;">Agregar nuevo cliente</h3>
+    <label>Nombre completo</label>
+    <input type="text" id="cli-nombre" placeholder="Nombre del cliente">
+    <label>Teléfono</label>
+    <input type="tel" id="cli-telefono" placeholder="Teléfono">
+    <label>Vehículo — Marca y modelo</label>
+    <input type="text" id="cli-auto" placeholder="Ej: Toyota Corolla 2015">
+    <button class="btn-principal" onclick="guardarCliente()">Guardar Cliente</button>
+  </div>
 
-<div id="sec-orden" class="oculto">
-<h2>📝 Orden de Servicio</h2>
-<div class="form-seccion">
-<div class="orden-cabecera">
-<div class="orden-logo">
-<h2>ORDEN DE SERVICIO</h2>
-<div class="orden-dir"><strong>AUTO REGINA</strong><br>Juan Rotter 316<br>Villa Regina<br>Tel. 2984548329</div>
-</div>
-<div class="orden-folio"><label>NÚMERO DE FOLIO</label><input type="text" id="folio" placeholder="0001"></div>
-</div>
-<div class="seccion-datos">
-<div class="seccion-titulo">DATOS DEL VEHÍCULO</div>
-<div class="fila-3">
-<div><label>Marca</label><input type="text" id="marca"></div>
-<div><label>Modelo</label><input type="text" id="modelo"></div>
-<div><label>Color</label><input type="text" id="color"></div>
-</div>
-<div class="fila-3">
-<div><label>Kilometraje</label><input type="text" id="km"></div>
-<div><label>Patente</label><input type="text" id="placa"></div>
-<div><label>Nº de Serie</label><input type="text" id="nserie"></div>
-</div>
-<div class="fila-3">
-<div><label>Ingreso</label><input type="date" id="fecha-ingreso"></div>
-<div><label>Salida</label><input type="date" id="fecha-salida"></div>
-<div></div>
-</div>
-<div class="fila">
-<div class="check-linea"><input type="checkbox" id="grua"><label for="grua">Ingreso en Grúa</label></div>
-<div class="check-linea"><input type="checkbox" id="siem"><label for="siem">S.I.E.M.</label></div>
-</div>
-</div>
-<div class="seccion-datos">
-<div class="seccion-titulo">DATOS DEL CLIENTE</div>
-<label>Seleccionar Cliente</label>
-<select id="orden-cli" onchange="cargarCliente()"><option value="">-- Elegir cliente --</option></select>
-<div class="fila-3" style="margin-top:10px;">
-<div><label>Nombre</label><input type="text" id="orden-nombre"></div>
-<div><label>Teléfono</label><input type="tel" id="orden-tel"></div>
-<div><label>Email</label><input type="email" id="orden-email"></div>
-</div>
-</div>
-<div class="seccion-datos">
-<div class="seccion-titulo">TRABAJOS REALIZADOS</div>
-<table class="tabla-trabajos" id="tabla-trabajos">
-<thead>
-<tr>
-<th class="cant">Cant</th>
-<th class="desc">Descripción</th>
-<th class="precio">Precio Unit.</th>
-<th class="importe">Importe</th>
-</tr>
-</thead>
-<tbody id="cuerpo-tabla"></tbody>
-<tfoot>
-<tr class="fila-iva">
-<td colspan="3" style="text-align:right;padding-right:12px;">I.V.A. incluido</td>
-<td><input type="checkbox" id="chk-iva"></td>
-</tr>
-<tr class="fila-total">
-<td colspan="3">TOTAL $</td>
-<td id="total-general">0,00</td>
-</tr>
-</tfoot>
-</table>
-<button type="button" class="btn-agregar-fila" onclick="agregarFila()">➕ AGREGAR LÍNEA</button>
-</div>
-<div class="seccion-datos">
-<div class="seccion-titulo">OBSERVACIONES</div>
-<textarea id="obs" rows="4" placeholder="Estado del vehículo..."></textarea>
-</div>
-<div class="seccion-datos">
-<div class="seccion-titulo">INVENTARIO</div>
-<div class="inventario-grid">
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Gato</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Antena</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Herramientas</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Emblemas</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Triángulos</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Tapones de rueda</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Tapetes</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Cables</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Llanta refacción</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Estéreo</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Extintor</label>
-<label class="inv-item"><input type="checkbox" class="inv-chk"> Encendedor</label>
-</div>
-</div>
-<button class="btn-principal" onclick="generarOrden()">✅
- GENERAR ORDEN</button>
-</div>
-<div id="caja-orden" class="oculto">
-<div class="aviso-exito">✅ Orden generada y guardada</div>
-<div class="vista-previa" id="texto-orden"></div>
-<button id="btn-copiar-orden" class="btn-copiar" onclick="copiarOrden()">📋 COPIAR ORDEN</button>
-<p style="text-align:center;margin:12px 0;color:#10B981;font-weight:bold;">👇 Pegalo en WhatsApp</p>
-</div>
-</div>
-</div>
+  <div id="sec-orden" class="form-seccion oculto">
+    <h2>📝 Orden de Trabajo</h2>
+    <label>Número / Folio</label>
+    <input type="text" id="folio" placeholder="Automático o escribí uno">
+    <label>Cliente</label>
+    <select id="orden-cli" onchange="cargarCliente()">
+      <option value="">-- Seleccionar cliente --</option>
+    </select>
+    <div class="fila">
+      <div>
+        <label>Marca</label>
+        <input type="text" id="marca">
+      </div>
+      <div>
+        <label>Modelo</label>
+        <input type="text" id="modelo">
+      </div>
+    </div>
+    <div class="fila">
+      <div>
+        <label>Patente</label>
+        <input type="text" id="placa">
+      </div>
+      <div>
+        <label>Kilometraje</label>
+        <input type="number" id="km">
+      </div>
+    </div>
+    <div class="fila">
+      <div>
+        <label>Fecha ingreso</label>
+        <input type="date" id="fecha-ingreso">
+      </div>
+      <div>
+        <label>Fecha estimada de entrega</label>
+        <input type="date" id="fecha-salida">
+      </div>
+    </div>
+    <div class="check-linea">
+      <input type="checkbox" id="grua">
+      <label for="grua">🚗 Vino en grúa</label>
+    </div>
+    <div class="check-linea">
+      <input type="checkbox" id="siem">
+      <label for="siem">🔧 Sistema de escape / Emisiones</label>
+    </div>
+    
+    <h3 style="margin:20px 0 10px;">Trabajos Realizados</h3>
+    <table class="tabla-trabajos" id="tabla-trabajos">
+      <thead>
+        <tr>
+          <th class="cant">Cant</th>
+          <th class="desc">Descripción del trabajo / Repuesto</th>
+          <th class="precio">Precio $</th>
+          <th class="importe">Total $</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpo-tabla">
+        <!-- filas dinámicas acá -->
+      </tbody>
+      <tfoot>
+        <tr class="fila-total">
+          <td colspan="3" style="text-align:right;">SUBTOTAL</td>
+          <td id="subtotal">$0,00</td>
+        </tr>
+        <tr class="fila-iva">
+          <td colspan="3" style="text-align:right;">¿Incluye IVA?</td>
+          <td><input type="checkbox" id="chk-iva"></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button class="btn-agregar-fila" onclick="agregarFila()">➕ Agregar línea de trabajo</button>
+    
+    <label>Observaciones / Detalles</label>
+    <textarea id="obs" rows="4" placeholder="Estado del vehículo, detalles adicionales..."></textarea>
+    
+    <h3 style="margin:20px 0 10px;">Inventario recibido</h3>
+    <div class="inventario-grid">
+      <label class="inv-item"><input type="checkbox" class="inv-chk"> 📄 Manuales</label>
+      <label class="inv-item"><input type="checkbox" class="inv-chk"> 🔑 Llaves extra</label>
+      <label class="inv-item"><input type="checkbox" class="inv-chk"> 🎛️ Control remoto</label>
+      <label class="inv-item"><input type="checkbox" class="inv-chk"> 🧰 Herramientas</label>
+      <label class="inv-item"><input type="checkbox" class="inv-chk"> 🎉 Otros objetos</label>
+    </div>
+    
+    <button class="btn-principal" onclick="generarOrden()">✅ Generar y Guardar Orden</button>
+    
+    <div id="caja-orden" class="oculto">
+      <p class="aviso-exito">✅ Orden generada y guardada</p>
+      <div class="vista-previa" id="texto-orden"></div>
+      <button id="btn-copiar-orden" class="btn-copiar" onclick="copiarOrden()">📋 Copiar Orden</button>
+    </div>
+  </div>
 
+  <div id="sec-lista-ordenes" class="form-seccion oculto">
+    <h2>📋 Órdenes de Trabajo Guardadas</h2>
+    <div id="lista-ordenes"><p class="sin-datos">Cargando órdenes...</p></div>
+  </div>
+</div>
 <script>
 const CLAVE_CORRECTA = '1234';
-const NUMERO_WSP = '+54 9 2984 54-8329';
+const NUMERO_WSP = '+5492944666777';
 let filaIndice = 0;
 
 function actualizarTotal() {
   let total = 0;
   document.querySelectorAll('#cuerpo-tabla tr').forEach(fila => {
-    const idBase = fila.querySelector('[id^=cant-]')?.id?.replace('cant-','');
-    if (!idBase) return;
-    const cant = parseFloat(document.getElementById(`cant-${idBase}`)?.value) || 0;
-    const prec = parseFloat(document.getElementById(`prec-${idBase}`)?.value) || 0;
+    const cant = parseFloat(fila.querySelector('[name*=cant]')?.value) || 0;
+    const prec = parseFloat(fila.querySelector('[name*=precio]')?.value) || 0;
     const imp = cant * prec;
-    const celdaImp = document.getElementById(`imp-${idBase}`);
-    if (celdaImp) celdaImp.textContent = imp.toFixed(2).replace('.',',');
+    fila.querySelector('.importe').textContent = imp.toFixed(2).replace('.',',');
     total += imp;
   });
-  document.getElementById('total-general').textContent = total.toFixed(2).replace('.',',');
+  document.getElementById('subtotal').textContent = '$' + total.toFixed(2).replace('.',',');
 }
 
 function agregarFila() {
   const cuerpo = document.getElementById('cuerpo-tabla');
   const id = filaIndice++;
   const fila = document.createElement('tr');
-  fila.innerHTML = `<td class="cant"><input type="number" id="cant-${id}" value="1" min="1" oninput="actualizarTotal()"></td><td class="desc"><input type="text" id="desc-${id}" placeholder="Descripción"></td><td class="precio"><input type="number" id="prec-${id}" value="0" min="0" step="0.01" oninput="actualizarTotal()"></td><td class="importe" id="imp-${id}">0,00</td>`;
+  fila.innerHTML = `
+    <td class="cant"><input type="number" name="cant-${id}" value="1" min="1" oninput="actualizarTotal()"></td>
+    <td class="desc"><input type="text" name="desc-${id}" placeholder="Descripción"></td>
+    <td class="precio"><input type="number" name="precio-${id}" value="0" min="0" step="0.01" oninput="actualizarTotal()"></td>
+    <td class="importe">$0,00</td>
+  `;
   cuerpo.appendChild(fila);
-  actualizarTotal();
 }
 
-async function asegurarCliente(nombre, telefono, vehiculo) {
-  const { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimestamp } = Firestore;
-  const q = query(collection(db, 'clientes'), where('telefono','==',telefono));
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    await addDoc(collection(db, 'clientes'), {nombre, telefono, vehiculo: vehiculo||'', creado: serverTimestamp()});
+function abrirModalClave() {
+  document.getElementById('modal-clave').style.display = 'flex';
+}
+
+function cerrarModal() {
+  document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+}
+
+function ingresar() {
+  const clave = document.getElementById('clave-acceso').value;
+  if (clave === CLAVE_CORRECTA) {
+    document.getElementById('pantalla-ingreso').classList.add('oculto');
+    document.getElementById('pantalla-principal').classList.remove('oculto');
+    document.getElementById('error-acceso').style.display = 'none';
+    iniciarTodo();
   } else {
-    const d = snap.docs[0];
-    await updateDoc(d.ref, {nombre, vehiculo: vehiculo||'', actualizado: serverTimestamp()});
+    document.getElementById('error-acceso').style.display = 'block';
   }
 }
 
-function abrirAcceso() { document.getElementById('modal-acceso').style.display='flex'; }
-function cerrarAcceso() { document.getElementById('modal-acceso').style.display='none'; }
-async function ingresar() {
-  if (document.getElementById('clave').value === CLAVE_CORRECTA) {
-    cerrarAcceso();
-    document.getElementById('pantalla-cliente').classList.add('oculto');
-    document.getElementById('pantalla-taller').classList.remove('oculto');
-    await iniciarTodo();
-  } else {
-    document.getElementById('error-clave').style.display='block';
-    setTimeout(()=>document.getElementById('error-clave').style.display='none',3000);
-  }
-}
 function salir() {
-  document.getElementById('pantalla-taller').classList.add('oculto');
-  document.getElementById('pantalla-cliente').classList.remove('oculto');
-  document.getElementById('clave').value='';
+  document.getElementById('pantalla-principal').classList.add('oculto');
+  document.getElementById('pantalla-ingreso').classList.remove('oculto');
+  document.getElementById('clave-acceso').value = '';
 }
 
 function mostrar(nombre) {
-  document.querySelectorAll('.pestaña').forEach(p=>{
-    const coincide = p.textContent.trim().toLowerCase().includes(nombre);
+  document.querySelectorAll('.pestaña').forEach(p => {
     p.classList.remove('activa','inactiva');
-    p.classList.add(coincide?'activa':'inactiva');
+    const coincide = p.textContent.toLowerCase().includes(nombre.toLowerCase().replace('-', ' '));
+    if (coincide) p.classList.add('activa');
+    else p.classList.add('inactiva');
   });
-  ['turnos','clientes','orden'].forEach(s=>{
-    document.getElementById('sec-'+s).classList.toggle('oculto', s!==nombre);
+  ['turnos','clientes','orden','lista-ordenes'].forEach(s => {
+    document.getElementById('sec-' + s).classList.toggle('oculto', s !== nombre);
   });
-}
-
-async function generarTurno() {
-  const fecha = document.getElementById('fecha').value;
-  const horario = document.getElementById('horario').value;
-  const nombre = document.getElementById('nombre').value.trim();
-  const telefono = document.getElementById('telefono').value.trim();
-  const vehiculo = document.getElementById('vehiculo').value.trim();
-  const servicio = document.getElementById('servicio').value;
-  if (!fecha||!horario||!nombre||!telefono||!servicio) { alert('Completá todos los campos'); return; }
-  const mensaje = `📅 TURNO — AUTO REGINA
-━━━━━━━━━━━━━━━━━━━━
-📅 Fecha: ${fecha}
-⏰ Horario: ${horario}
-👤 Cliente: ${nombre}
-📞 Teléfono: ${telefono}
-🚗 Vehículo: ${vehiculo||'---'}
-🔧 Servicio: ${servicio}
-━━━━━━━━━━━━━━━━━━━━
-📞 ${NUMERO_WSP}`;
-  const { collection, addDoc, serverTimestamp } = Firestore;
-  await addDoc(collection(db,'turnos'), {fecha,horario,nombre,telefono,vehiculo,servicio,estado:'pendiente',creado:serverTimestamp()});
-  await asegurarCliente(nombre,telefono,vehiculo);
-  document.getElementById('texto-turno').textContent = mensaje;
-  document.getElementById('caja-turno').classList.remove('oculto');
-}
-
-async function copiarTurno() {
-  const texto = document.getElementById('texto-turno').textContent;
-  const btn = document.getElementById('btn-copiar-turno');
-  try {
-    await navigator.clipboard.writeText(texto);
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 TOCÁ ACÁ PARA COPIAR'; btn.classList.remove('btn-copiado');},3000);
-  } catch {
-    const area = document.getElementById('area-copiado');
-    area.value=texto; area.select(); document.execCommand('copy');
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 TOCÁ ACÁ PARA COPIAR'; btn.classList.remove('btn-copiado');},3000);
-  }
+  if (nombre === 'lista-ordenes') cargarListaOrdenes();
 }
 
 async function iniciarTodo() {
-  await Promise.all([cargarTurnos(), cargarClientes(), cargarSelectClientes()]);
   document.getElementById('fecha-ingreso').valueAsDate = new Date();
-  if (!document.querySelectorAll('#cuerpo-tabla tr').length) agregarFila();
-  actualizarTotal();
+  agregarFila();
+  await Promise.all([cargarTurnos(), cargarClientes(), cargarSelectClientes()]);
+}
+
+// === TURNOS ===
+async function guardarTurno() {
+  const { collection, addDoc, serverTimestamp } = Firestore;
+  const datos = {
+    fecha: document.getElementById('turno-fecha').value,
+    hora: document.getElementById('turno-hora').value,
+    nombre: document.getElementById('turno-nombre').value,
+    telefono: document.getElementById('turno-telefono').value,
+    notas: document.getElementById('turno-notas').value,
+    estado: 'pendiente',
+    creado: serverTimestamp()
+  };
+  if (!datos.fecha || !datos.nombre) { alert('Completá fecha y nombre'); return; }
+  await addDoc(collection(db, 'turnos'), datos);
+  document.getElementById('turno-fecha
+').value = '';
+  document.getElementById('turno-hora').value = '';
+  document.getElementById('turno-nombre').value = '';
+  document.getElementById('turno-telefono').value = '';
+  document.getElementById('turno-notas').value = '';
+  cargarTurnos();
 }
 
 async function cargarTurnos() {
-  const { collection, getDocs, query, orderBy } = Firestore;
+  const { collection, getDocs, query, orderBy, deleteDoc, doc, updateDoc } = Firestore;
   const c = document.getElementById('lista-turnos');
+  c.innerHTML = '<p class="cargando">Cargando...</p>';
   try {
-    const q = query(collection(db,'turnos'), orderBy('creado','desc'));
-    const s = await getDocs(q);
-    if (s.empty) { c.innerHTML='<p class="sin-datos">No hay turnos aún</p>'; return; }
-    c.innerHTML='';
-    s.forEach(d=>{
-      const x=d.data();
-      const estClase = x.estado==='pendiente'?'estado-pendiente':x.estado==='confirmado'?'estado-confirmado':'estado-atendido';
-      c.innerHTML += `<div class="lista-item"><span class="estado ${estClase}">${x.estado||'pendiente'}</span><p><strong>📅 ${x.fecha}</strong> — ${x.horario}</p><p>👤 ${x.nombre}</p><p>📞 ${x.telefono}</p><p>🚗 ${x.vehiculo||'-'}</p><p>🔧 ${x.servicio}</p><div class="acciones"><button class="btn-chico btn-editar" onclick="cambiarEstado('${d.id}','confirmado')">✅ Confirmar</button><button class="btn-chico btn-guardar" onclick="cambiarEstado('${d.id}','atendido')">✔️ Atendido</button><button class="btn-chico btn-eliminar" onclick="borrarTurno('${d.id}')">🗑️ Eliminar</button></div></div>`;
+    const q = query(collection(db,'turnos'), orderBy('fecha','asc'));
+    const snap = await getDocs(q);
+    if(snap.empty) { c.innerHTML = '<p class="sin-datos">No hay turnos agendados</p>'; return; }
+    c.innerHTML = '';
+    snap.forEach(d => {
+      const t = d.data();
+      const tarjeta = document.createElement('div');
+      tarjeta.className = 'item-datos';
+      tarjeta.innerHTML = `
+        <div>
+          <strong>${t.fecha} — ${t.hora || ''}</strong><br>
+          👤 ${t.nombre}<br>
+          📞 ${t.telefono || 'Sin teléfono'}<br>
+          📝 ${t.notas || 'Sin notas'}<br>
+          <span class="estado-pendiente">${t.estado || 'pendiente'}</span>
+          <div class="acciones">
+            <button class="btn-chico btn-editar" onclick="cambiarEstadoTurno('${d.id}','confirmado')">✅ Confirmar</button>
+            <button class="btn-chico btn-eliminar" onclick="borrarTurno('${d.id}')">🗑️ Eliminar</button>
+          </div>
+        </div>
+      `;
+      c.appendChild(tarjeta);
     });
-  } catch (err) { c.innerHTML=`<p class="sin-datos">❌ ${err.message}</p>`; }
+  } catch(err) { c.innerHTML = `<p class="sin-datos">❌ ${err.message}</p>`; }
 }
 
-async function cambiarEstado(id,est) {
+async function cambiarEstadoTurno(id, estado) {
   const { doc, updateDoc } = Firestore;
-  await updateDoc(doc(db,'turnos',id), {estado:est});
+  await updateDoc(doc(db,'turnos',id), {estado: estado});
   cargarTurnos();
 }
 
 async function borrarTurno(id) {
-  if (!confirm('¿Eliminar este turno?')) return;
-  const { doc, deleteDoc } = Firestore;
+  if(!confirm('¿Eliminar este turno?')) return;
+  const { deleteDoc, doc } = Firestore;
   await deleteDoc(doc(db,'turnos',id));
   cargarTurnos();
 }
 
-async function cargarClientes() {
-  const { collection, getDocs, query, orderBy } = Firestore;
-  const c = document.getElementById('lista-clientes');
-  try {
-    const q = query(collection(db,'clientes'), orderBy('creado','desc'));
-    const s = await getDocs(q);
-    if (s.empty) { c.innerHTML='<p class="sin-datos">No hay clientes aún</p>'; return; }
-    c.innerHTML='';
-    s.forEach(d=>{
-      const x=d.data();
-      c.innerHTML += `<div class="lista-item"><p><strong>${x.nombre}</strong></p><p>📞 ${x.telefono}</p><p>🚗 ${x.vehiculo||'-'}</p><div class="acciones"><button class="btn-chico btn-eliminar" onclick="borrarCliente('${d.id}')">🗑️ Eliminar</button></div></div>`;
-    });
-  } catch (err) { c.innerHTML=`<p class="sin-datos">❌ ${err.message}</p>`; }
-}
-
+// === CLIENTES ===
 async function guardarCliente() {
   const { collection, addDoc, serverTimestamp } = Firestore;
-  const n = document.getElementById('cli-nombre').value.trim();
-  const t = document.getElementById('cli-tel').value.trim();
-  const a = document.getElementById('cli-auto').value.trim();
-  if (!n||!t) { alert('Nombre y teléfono obligatorios'); return; }
-  await addDoc(collection(db,'clientes'), {nombre:n, telefono:t, vehiculo:a, creado:serverTimestamp()});
-  document.getElementById('cli-nombre').value=''; document.getElementById('cli-tel').value=''; document.getElementById('cli-auto').value='';
-  await cargarClientes(); await cargarSelectClientes();
+  const datos = {
+    nombre: document.getElementById('cli-nombre').value,
+    telefono: document.getElementById('cli-telefono').value,
+    vehiculo: document.getElementById('cli-auto').value,
+    creado: serverTimestamp()
+  };
+  if (!datos.nombre) { alert('Escribí el nombre del cliente'); return; }
+  await addDoc(collection(db,'clientes'), datos);
+  document.getElementById('cli-nombre').value = '';
+  document.getElementById('cli-telefono').value = '';
+  document.getElementById('cli-auto').value = '';
+  cargarClientes();
+  cargarSelectClientes();
+}
+
+async function cargarClientes() {
+  const { collection, getDocs, query, orderBy, deleteDoc, doc } = Firestore;
+  const c = document.getElementById('lista-clientes');
+  c.innerHTML = '<p class="cargando">Cargando...</p>';
+  try {
+    const q = query(collection(db,'clientes'), orderBy('nombre','asc'));
+    const snap = await getDocs(q);
+    if(snap.empty) { c.innerHTML = '<p class="sin-datos">No hay clientes guardados</p>'; return; }
+    c.innerHTML = '';
+    snap.forEach(d => {
+      const cl = d.data();
+      const tarjeta = document.createElement('div');
+      tarjeta.className = 'item-datos';
+      tarjeta.innerHTML = `
+        <div>
+          <strong>${cl.nombre}</strong><br>
+          📞 ${cl.telefono || 'Sin teléfono'}<br>
+          🚗 ${cl.vehiculo || 'Sin vehículo'}
+          <div class="acciones">
+            <button class="btn-chico btn-eliminar" onclick="borrarCliente('${d.id}')">🗑️ Eliminar</button>
+          </div>
+        </div>
+      `;
+      c.appendChild(tarjeta);
+    });
+  } catch(err) { c.innerHTML = `<p class="sin-datos">❌ ${err.message}</p>`; }
 }
 
 async function borrarCliente(id) {
-  if (!confirm('¿Eliminar este cliente?')) return;
-  const { doc, deleteDoc } = Firestore;
+  if(!confirm('¿Eliminar este cliente?')) return;
+  const { deleteDoc, doc } = Firestore;
   await deleteDoc(doc(db,'clientes',id));
-  await cargarClientes(); await cargarSelectClientes();
+  cargarClientes();
+  cargarSelectClientes();
 }
 
 async function cargarSelectClientes() {
   const { collection, getDocs, query, orderBy } = Firestore;
-  const s = document.getElementById('orden-cli');
-  const val = s.value;
-  s.innerHTML = '<option value="">-- Elegir cliente --</option>';
+  const sel = document.getElementById('orden-cli');
+  const val = sel.value;
+  sel.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
   try {
-    const docs = await getDocs(query(collection(db,'clientes'), orderBy('nombre')));
-    docs.forEach(d=>{
-      const x=d.data();
-      s.innerHTML += `<option value="${d.id}">${x.nombre} — ${x.telefono}</option>`;
+    const q = query(collection(db,'clientes'), orderBy('nombre','asc'));
+    const snap = await getDocs(q);
+    snap.forEach(d => {
+      const c = d.data();
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = c.nombre + (c.telefono ? ` — ${c.telefono}` : '');
+      sel.appendChild(opt);
     });
-  } catch {}
-  s.value = val;
+    sel.value = val;
+  } catch(err) { console.error(err); }
 }
 
 async function cargarCliente() {
   const id = document.getElementById('orden-cli').value;
-  if (!id) {
-    document.getElementById('orden-nombre').value='';
-    document.getElementById('orden-tel').value='';
-    document.getElementById('orden-email').value='';
+  if(!id) {
+    document.getElementById('marca').value = '';
+    document.getElementById('modelo').value = '';
+    document.getElementById('placa').value = '';
     return;
   }
   const { doc, getDoc } = Firestore;
-  const d = await getDoc(doc(db,'clientes',id));
-  if (d.exists()) {
-    const x=d.data();
-    document.getElementById('orden-nombre').value = x.nombre||'';
-    document.getElementById('orden-tel').value = x.telefono||'';
-    document.getElementById('orden-email').value = x.email||'';
-    if (x.vehiculo) {
-      const partes = x.vehiculo.split(' ');
-      document.getElementById('marca').value = partes[0]||'';
-      document.getElementById('modelo').value = partes.slice(1).join(' ')||'';
+  try {
+    const snap = await getDoc(doc(db,'clientes',id));
+    if(snap.exists()) {
+      const c = snap.data();
+      if(c.vehiculo) {
+        const partes = c.vehiculo.split(' ');
+        document.getElementById('marca').value = partes[0] || '';
+        document.getElementById('modelo').value = partes.slice(1).join(' ') || '';
+      }
     }
-  }
+  } catch(err) { console.error(err); }
 }
 
+// === ÓRDENES ===
 async function generarOrden() {
-  const folio = document.getElementById('folio').value.trim() || 'S/N';
+  const folio = document.getElementById('folio').value.trim() || `ORD-${Date.now()}`;
+  const cliId = document.getElementById('orden-cli').value;
   const marca = document.getElementById('marca').value.trim();
   const modelo = document.getElementById('modelo').value.trim();
-  const color = document.getElementById('color').value.trim();
-  const km = document.getElementById('km').value.trim();
   const placa = document.getElementById('placa').value.trim();
-  const nserie = document.getElementById('nserie').value.trim();
+  const km = document.getElementById('km').value.trim();
   const fechaIng = document.getElementById('fecha-ingreso').value;
   const fechaSal = document.getElementById('fecha-salida').value || 'PENDIENTE';
   const grua = document.getElementById('grua').checked ? 'SI' : 'NO';
   const siem = document.getElementById('siem').checked ? 'SI' : 'NO';
-  const nombre = document.getElementById('orden-nombre').value.trim();
-  const tel = document.getElementById('orden-tel').value.trim();
-  const email = document.getElementById('orden-email').value.trim() || '---';
   const obs = document.getElementById('obs').value.trim();
-  const tieneIVA = document.getElementById('chk-iva').checked;
-
-  if (!marca||!nombre||!tel) { alert('Completá Marca, Nombre y Teléfono'); return; }
-
-  const filas = []; let total=0;
-  document.querySelectorAll('#cuerpo-tabla tr').forEach(f=>{
-    const idBase = f.querySelector('[id^=cant-]')?.id?.replace('cant-','');
-    if (!idBase) return;
-    const c = parseFloat(document.getElementById(`cant-${idBase}`).value)||0;
-    const d = document.getElementById(`desc-${idBase}`).value.trim();
-    const p = parseFloat(document.getElementById(`prec-${idBase}`).value)||0;
-    if (d||p) { const subt = c*p; filas.push({cant:c, desc:d, precio:p, subtotal:subt}); total += subt; }
+  const incluyeIVA = document.getElementById('chk-iva').checked;
+  
+  if(!marca || !cliId) { alert('Seleccioná un cliente y completá la marca del vehículo'); return; }
+  
+  const trabajos = [];
+  let total = 0;
+  document.querySelectorAll('#cuerpo-tabla tr').forEach(f => {
+    const cant = parseFloat(f.querySelector('td:first-child input').value) || 0;
+    const desc = f.querySelector('td:nth-child(2) input').value.trim();
+    const prec = parseFloat(f.querySelector('td:nth-child(3) input').value) || 0;
+    if(desc || cant > 0) {
+      const subt = cant * prec;
+      trabajos.push({cantidad:cant, descripcion:desc, precioUnitario:prec, subtotal:subt});
+      total += subt;
+    }
   });
-
-  const invChecks = document.querySelectorAll('.inv-chk:checked');
-  const inventario = invChecks.length ? [...invChecks].map(cb=>cb.parentElement.textContent.trim()).join(' · ') : 'Ninguno';
-  const detalle = filas.map(f=>`${f.cant} x ${f.desc} — $${f.subtotal.toFixed(2).replace('.',',')}`).join('\n');
-
+  
+  const invItems = [];
+  document.querySelectorAll('.inv-chk:checked').forEach(cb => {
+    const label = cb.parentElement.textContent.trim();
+    invItems.push(label);
+  });
+  
+  const { getDoc, doc, addDoc, collection, serverTimestamp } = Firestore;
+  const cliSnap = await getDoc(doc(db,'clientes',cliId));
+  const cliente = cliSnap.exists() ? cliSnap.data() : {nombre:'Desconocido', telefono:''};
+  
   const ordenTexto = `═══════════════════════════════
 ORDEN DE SERVICIO — AUTO REGINA
 ═══════════════════════════════
 FOLIO: ${folio}
-Juan Rotter 316 · Villa Regina
-Tel: 2984548329
+FECHA INGRESO: ${fechaIng}
+FECHA ENTREGA: ${fechaSal}
+
+── DATOS DEL CLIENTE ──
+Nombre: ${cliente.nombre}
+Teléfono: ${cliente.telefono || 'Sin dato'}
 
 ── DATOS DEL VEHÍCULO ──
 Marca: ${marca}
-Modelo: ${modelo||'---'}
-Color: ${color||'---'}
-Kilometraje: ${km||'---'}
-Patente: ${placa||'---'}
-Nº Serie: ${nserie||'---'}
-Ingreso: ${fechaIng}
-Salida: ${fechaSal}
-Grúa: ${grua}
-S.I.E.M.: ${siem}
+Modelo: ${modelo}
+Patente: ${placa || 'Sin patente'}
+Kilometraje: ${km || 'Sin dato'}
+Vino en grúa: ${grua}
+Sistema de escape: ${siem}
 
-── CLIENTE ──
-Nombre: ${nombre}
-Teléfono: ${tel}
-Email: ${email}
+── TRABAJOS REALIZADOS ──
+${trabajos.length === 0 ? 'Sin detalle' : trabajos.map(t =>
+  `${t.cantidad}x ${t.descripcion} — $${t.subtotal.toFixed(2).replace('.',',')}`
+).join('\n')}
+───────────────────────────────
+SUBTOTAL: $${total.toFixed(2).replace('.',',')}
+${incluyeIVA ? '* Incluye IVA' : '* No incluye IVA'}
+═══════════════════════════════
+OBSERVACIONES:
+${obs || 'Sin observaciones'}
 
-── TRABAJOS ──
-${detalle||'Sin registrar'}
-
-${tieneIVA?'I.V.A. incluido':'I.V.A. no incluido'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TOTAL: $${total.toFixed(2).replace('.',',')}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-── OBSERVACIONES ──
-${obs||'Sin observaciones'}
-
-── INVENTARIO ──
-${inventario}
+── INVENTARIO RECIBIDO ──
+${invItems.length === 0 ? 'Ningún objeto recibido' : invItems.join('\n')}
 
 ═══════════════════════════════
-AUTO REGINA — Servicio Mecánico
-═══════════════════════════════`;
+Firma cliente: ___________________`;
 
-  const { collection, addDoc, serverTimestamp } = Firestore;
   await addDoc(collection(db,'ordenes'), {
-    folio, marca, modelo, color, km, placa, nserie,
-    fechaIngreso: fechaIng, fechaSalida: fechaSal, grua, siem,
-    nombreCliente: nombre, telefonoCliente: tel, emailCliente: email,
-    trabajos: filas, observaciones: obs, inventario,
-    iva: tieneIVA, total, creado: serverTimestamp()
+    folio,
+    clienteId: cliId,
+    nombreCliente: cliente.nombre,
+    telefonoCliente: cliente.telefono,
+    marca, modelo, placa, km,
+    fechaIngreso: fechaIng,
+    fechaSalida: fechaSal,
+    grua, siem,
+    trabajos,
+    observaciones: obs,
+    inventario: invItems,
+    iva: incluyeIVA,
+    total,
+    creado: serverTimestamp()
   });
-
+  
   document.getElementById('texto-orden').textContent = ordenTexto;
   document.getElementById('caja-orden').classList.remove('oculto');
 }
 
 async function copiarOrden() {
   const texto = document.getElementById('texto-orden').textContent;
-  const btn = document.getElementById('btn-copiar-orden');
   try {
     await navigator.clipboard.writeText(texto);
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN'; btn.classList.remove('btn-copiado');},3000);
+    alert('✅ ¡Orden copiada al portapapeles!');
   } catch {
-    const area = document.getElementById('area-copiado');
-    area.value=texto; area.select(); document.execCommand('copy');
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN'; btn.classList.remove('btn-copiado');},3000);
+    const ta = document.getElementById('area-copiado');
+    ta.value = texto;
+    ta.select();
+    document.execCommand('copy');
+    alert('✅ ¡Orden copiada al portapapeles!');
+  }
+}
+
+// === LISTA DE ÓRDENES GUARDADAS ===
+async function cargarListaOrdenes() {
+  const { collection, getDocs, query, orderBy, deleteDoc, doc } = Firestore;
+  const c = document.getElementById('lista-ordenes');
+  c.innerHTML = '<p class="cargando">Cargando órdenes...</p>';
+  
+  try {
+    const q = query(collection(db,'ordenes'), orderBy('creado','desc'));
+    const snap = await getDocs(q);
+    
+    if(snap.empty) {
+      c.innerHTML = '<p class="sin-datos">No hay órdenes guardadas todavía</p>';
+      return;
+    }
+    
+    c.innerHTML = '';
+    snap.forEach(d => {
+      const o = d.data();
+      const fecha = o.creado ? new Date(o.creado.toDate()).toLocaleString('es-AR') : 'Sin fecha';
+      const total = o.total ? `$${o.total.toFixed(2).replace('.',',')}` : 'Sin total';
+      
+      const tarjeta = document.createElement('div');
+      tarjeta.className = 'item-datos';
+      tarjeta.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <strong>📋 ${o.folio || 'Sin folio'}</strong><br>
+            📅 ${fecha}<br>
+            👤 ${o.nombreCliente || 'Cliente desconocido'}<br>
+            🚗 ${o.marca || ''} ${o.modelo || ''} — ${o.placa || 'Sin patente'}<br>
+            💰 Total: ${total}
+          </div>
+          <button class="btn-chico btn-eliminar" onclick="eliminarOrden('${d.id}')">🗑️</button>
+        </div>
+      `;
+      c.appendChild(tarjeta);
+    });
+  } catch(err) {
+    c.innerHTML = `<p class="sin-datos">❌ Error: ${err.message}</p>`;
+  }
+}
+
+async function eliminarOrden(id) {
+  if(!confirm('¿Eliminar esta orden?')) return;
+  const { deleteDoc, doc } = Firestore;
+  try {
+    await deleteDoc(doc(db,'ordenes',id));
+    cargarListaOrdenes();
+  } catch(err) {
+    alert('Error al eliminar: ' + err.message);
   }
 }
 </script>
