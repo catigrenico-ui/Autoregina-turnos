@@ -78,7 +78,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 .tabla-trabajos .cant{width:15%;text-align:center;}
 .tabla-trabajos .desc{width:50%;}
 .tabla-trabajos .precio{width:20%;text-align:right;}
-.tabla-trabajos .importe{width:15%;text-align:right;font-weight:bold;color:#0F2B48;}
+.tabla-trabajos .importe{width:15%;text-align:right;font-weight:bold;color:#0F52BA;}
 .tabla-trabajos input{border:1px solid #E2E8F0;background:#FAFCFF;padding:6px;width:100%;font-size:14px;border-radius:4px;}
 .fila-total{background:#E6F0FA;font-weight:800;font-size:18px;color:#0F52BA;}
 .fila-total td{border:none;padding:12px 8px;text-align:right;}
@@ -94,17 +94,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 .estado-confirmado{background:#DBEAFE;color:#1E40AF;}
 .estado-atendido{background:#D1FAE5;color:#065F46;}
 .aviso-exito{background:#D1FAE5;border:2px solid #10B981;border-radius:12px;padding:12px;text-align:center;margin-top:12px;color:#065F46;font-weight:600;}
-.ia-mensajes{max-height:350px;overflow-y:auto;padding:16px;background:#F8FAFC;border-radius:16px;margin-bottom:12px;}
-.ia-mensaje{margin-bottom:14px;padding:12px 16px;border-radius:16px;max-width:90%;line-height:1.6;white-space:pre-wrap;}
-.ia-usuario{background:#DBEAFE;color:#1E3A8A;margin-left:auto;border-bottom-right-radius:6px;}
-.ia-asistente{background:#E0F2FE;color:#0C4A6E;margin-right:auto;border-bottom-left-radius:6px;}
-.ia-pensando{font-style:italic;color:#64748B;}
-.ia-rapidas{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
-.ia-pregunta{background:#F1F5F9;border:1px solid #CBD5E1;border-radius:20px;padding:10px 16px;font-size:13px;cursor:pointer;transition:.2s;}
-.ia-pregunta:hover{background:#E0F2FE;border-color:#0F2B48;}
-.ia-fila{display:flex;gap:10px;}
-.ia-fila input{flex:1;margin:0;}
-.ia-enviar{background:linear-gradient(135deg,#0F2B48,#165DFF);color:white;border:none;border-radius:12px;padding:14px 20px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .btn-agregar-fila{background:#E0F2FE;color:#0C4A6E;border:none;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;margin:10px 0;}
 </style>
 </head>
@@ -157,7 +146,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <div class="modal-caja">
 <h3 style="text-align:center;color:#0F2B48;">🔧 ACCESO TALLER</h3>
 <label>Contraseña</label><input type="password" id="clave" placeholder="Escribí la contraseña">
-<button class="btn-ingresar" onclick="cerrarAcceso();document.getElementById('pantalla-cliente').classList.add('oculto');document.getElementById('pantalla-taller').classList.remove('oculto');iniciarTodo();">INGRESAR</button>
+<button class="btn-ingresar" onclick="ingresar()">INGRESAR</button>
 <button class="btn-volver" onclick="cerrarAcceso()">Volver</button>
 <p class="error" id="error-clave">Contraseña incorrecta</p>
 </div>
@@ -172,7 +161,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <button class="pestaña activa" onclick="mostrar('turnos')">📋 Turnos</button>
 <button class="pestaña inactiva" onclick="mostrar('clientes')">👥 Clientes</button>
 <button class="pestaña inactiva" onclick="mostrar('orden')">📝 Orden</button>
-<button class="pestaña inactiva" onclick="mostrar('asistente')">🤖 IA</button>
 <button class="pestaña salir" onclick="salir()">🚪 Salir</button>
 </div>
 
@@ -254,7 +242,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <td><input type="checkbox" id="chk-iva"></td>
 </tr>
 <tr class="fila-total">
-<td colspan="3">
+<td colspan="3">TOTAL $</td>
 <td id="total-general">0,00</td>
 </tr>
 </tfoot>
@@ -282,32 +270,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <label class="inv-item"><input type="checkbox" class="inv-chk"> Encendedor</label>
 </div>
 </div>
-<button class="btn-principal" onclick="generarOrden()">✅ GENERAR ORDEN</button>
+<button class="btn-principal" onclick="generarOrden()">✅
+ GENERAR ORDEN</button>
 </div>
 <div id="caja-orden" class="oculto">
-<div class="aviso-exito">✅ Orden generada</div>
+<div class="aviso-exito">✅ Orden generada y guardada</div>
 <div class="vista-previa" id="texto-orden"></div>
 <button id="btn-copiar-orden" class="btn-copiar" onclick="copiarOrden()">📋 COPIAR ORDEN</button>
 <p style="text-align:center;margin:12px 0;color:#10B981;font-weight:bold;">👇 Pegalo en WhatsApp</p>
-</div>
-</div>
-
-<div id="sec-asistente" class="oculto">
-<h2>🤖 Asistente Técnico — IA</h2>
-<div class="ia-rapidas">
-<span class="ia-pregunta" onclick="pregRapida('Dame un resumen del taller: turnos, clientes y facturación')">📊 Resumen</span>
-<span class="ia-pregunta" onclick="pregRapida('¿Por qué no arranca el motor en frío y qué revisar?')">🔧 No arranca</span>
-<span class="ia-pregunta" onclick="pregRapida('¿Qué significa el código P0300 y cómo solucionarlo?')">🔍 Código P0300</span>
-<span class="ia-pregunta" onclick="pregRapida('Cómo diagnosticar fallas en inyección electrónica paso a paso')">🖥️ Inyección</span>
-<span class="ia-pregunta" onclick="pregRapida('Guía para cambiar aceite y filtros paso a paso')">🛢️ Cambio de aceite</span>
-<span class="ia-pregunta" onclick="pregRapida('Cómo purgar frenos y sangrar el circuito hidráulico')">🛑 Purgar frenos</span>
-</div>
-<div class="ia-mensajes" id="ia-chat">
-<div class="ia-mensaje ia-asistente">🔧 ¡Hola! Soy tu asistente técnico para AUTO REGINA. Consultame sobre fallas, códigos OBD, procedimientos y más.</div>
-</div>
-<div class="ia-fila">
-<input type="text" id="ia-texto" placeholder="Escribí tu consulta..." onkeydown="if(event.key==='Enter')enviarIA()">
-<button class="ia-enviar" onclick="enviarIA()">Enviar</button>
 </div>
 </div>
 </div>
@@ -315,9 +285,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <script>
 const CLAVE_CORRECTA = '1234';
 const NUMERO_WSP = '+54 9 2984 54-8329';
-const API_KEY = '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';
 let filaIndice = 0;
-let historialConversacion = [];
 
 function actualizarTotal() {
   let total = 0;
@@ -355,83 +323,19 @@ async function asegurarCliente(nombre, telefono, vehiculo) {
   }
 }
 
-async function llamarIA(mensaje) {
-  const { collection, getDocs, query, orderBy } = Firestore;
-  const consulta = mensaje.toLowerCase();
-
-  if (consulta.includes('resumen') || consulta.includes('facturación') || consulta.includes('totales')) {
-    try {
-      const turnosSnap = await getDocs(query(collection(db, 'turnos'), orderBy('creado','desc')));
-      const pend = turnosSnap.docs.filter(d=>d.data().estado==='pendiente').length;
-      const conf = turnosSnap.docs.filter(d=>d.data().estado==='confirmado').length;
-      const aten = turnosSnap.docs.filter(d=>d.data().estado==='atendido').length;
-      const cliSnap = await getDocs(collection(db, 'clientes'));
-      const ordSnap = await getDocs(collection(db, 'ordenes'));
-      let totalFac = 0;
-      let cantidadOrdenesReales = 0;
-
-      ordSnap.forEach(d=>{
-        const dato = d.data();
-        if (dato.hasOwnProperty('esPrueba') && dato.esPrueba === false) {
-          totalFac += dato.total || 0;
-          cantidadOrdenesReales++;
-        }
-      });
-
-      return `📊 RESUMEN — AUTO REGINA
-━━━━━━━━━━━━━━━━━━━━
-📋 TURNOS: ${turnosSnap.size}
-• Pendientes: ${pend}
-• Confirmados: ${conf}
-• Atendidos: ${aten}
-👥 CLIENTES: ${cliSnap.size}
-✅ ÓRDENES REALES: ${cantidadOrdenesReales}
-💰 TOTAL FACTURADO: $${totalFac.toLocaleString('es-AR',{minimumFractionDigits:2})}
-━━━━━━━━━━━━━━━━━━━━`;
-    } catch { return 'No pude leer los datos.'; }
-  }
-
-  try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'meta-llama/llama-3.1-8b-instruct',
-        messages: [
-          { role: 'system', content: 'Eres asistente técnico automotriz para AUTO REGINA. Explicá claro, paso a paso, en español sencillo.' },
-          ...historialConversacion,
-          { role: 'user', content: mensaje }
-        ]
-      })
-    });
-    const datos = await res.json();
-    if (datos.error) return `❌ ${datos.error.message}`;
-    return datos.choices?.[0]?.message?.content?.trim() || 'Sin respuesta';
-  } catch (e) { return `❌ Error: ${e.message}`; }
-}
-
-function pregRapida(texto) { document.getElementById('ia-texto').value = texto; enviarIA(); }
-
-async function enviarIA() {
-  const input = document.getElementById('ia-texto');
-  const texto = input.value.trim();
-  if (!texto) return;
-  const chat = document.getElementById('ia-chat');
-  chat.innerHTML += `<div class="ia-mensaje ia-usuario">${texto}</div>`;
-  historialConversacion.push({role:'user',content:texto});
-  input.value = '';
-  const idPensando = 'p'+Date.now();
-  chat.innerHTML += `<div class="ia-mensaje ia-asistente ia-pensando" id="${idPensando}">🔄 Escribiendo...</div>`;
-  chat.scrollTop = chat.scrollHeight;
-  const resp = await llamarIA(texto);
-  document.getElementById(idPensando)?.remove();
-  chat.innerHTML += `<div class="ia-mensaje ia-asistente">${resp}</div>`;
-  historialConversacion.push({role:'assistant',content:resp});
-  chat.scrollTop = chat.scrollHeight;
-}
-
 function abrirAcceso() { document.getElementById('modal-acceso').style.display='flex'; }
 function cerrarAcceso() { document.getElementById('modal-acceso').style.display='none'; }
+async function ingresar() {
+  if (document.getElementById('clave').value === CLAVE_CORRECTA) {
+    cerrarAcceso();
+    document.getElementById('pantalla-cliente').classList.add('oculto');
+    document.getElementById('pantalla-taller').classList.remove('oculto');
+    await iniciarTodo();
+  } else {
+    document.getElementById('error-clave').style.display='block';
+    setTimeout(()=>document.getElementById('error-clave').style.display='none',3000);
+  }
+}
 function salir() {
   document.getElementById('pantalla-taller').classList.add('oculto');
   document.getElementById('pantalla-cliente').classList.remove('oculto');
@@ -444,7 +348,7 @@ function mostrar(nombre) {
     p.classList.remove('activa','inactiva');
     p.classList.add(coincide?'activa':'inactiva');
   });
-  ['turnos','clientes','orden','asistente'].forEach(s=>{
+  ['turnos','clientes','orden'].forEach(s=>{
     document.getElementById('sec-'+s).classList.toggle('oculto', s!==nombre);
   });
 }
@@ -575,94 +479,114 @@ async function cargarSelectClientes() {
 
 async function cargarCliente() {
   const id = document.getElementById('orden-cli').value;
-if (!id) {
-    document.getElementById('orden-auto').value = '';
+  if (!id) {
+    document.getElementById('orden-nombre').value='';
+    document.getElementById('orden-tel').value='';
+    document.getElementById('orden-email').value='';
     return;
   }
-  const { getDoc, doc } = Firestore;
-  try {
-    const d = await getDoc(doc(db, 'clientes', id));
-    if (d.exists()) {
-      document.getElementById('orden-auto').value = d.data().vehiculo || '';
+  const { doc, getDoc } = Firestore;
+  const d = await getDoc(doc(db,'clientes',id));
+  if (d.exists()) {
+    const x=d.data();
+    document.getElementById('orden-nombre').value = x.nombre||'';
+    document.getElementById('orden-tel').value = x.telefono||'';
+    document.getElementById('orden-email').value = x.email||'';
+    if (x.vehiculo) {
+      const partes = x.vehiculo.split(' ');
+      document.getElementById('marca').value = partes[0]||'';
+      document.getElementById('modelo').value = partes.slice(1).join(' ')||'';
     }
-  } catch {}
+  }
 }
 
 async function generarOrden() {
+  const folio = document.getElementById('folio').value.trim() || 'S/N';
+  const marca = document.getElementById('marca').value.trim();
+  const modelo = document.getElementById('modelo').value.trim();
+  const color = document.getElementById('color').value.trim();
+  const km = document.getElementById('km').value.trim();
+  const placa = document.getElementById('placa').value.trim();
+  const nserie = document.getElementById('nserie').value.trim();
+  const fechaIng = document.getElementById('fecha-ingreso').value;
+  const fechaSal = document.getElementById('fecha-salida').value || 'PENDIENTE';
+  const grua = document.getElementById('grua').checked ? 'SI' : 'NO';
+  const siem = document.getElementById('siem').checked ? 'SI' : 'NO';
+  const nombre = document.getElementById('orden-nombre').value.trim();
+  const tel = document.getElementById('orden-tel').value.trim();
+  const email = document.getElementById('orden-email').value.trim() || '---';
+  const obs = document.getElementById('obs').value.trim();
+  const tieneIVA = document.getElementById('chk-iva').checked;
+
+  if (!marca||!nombre||!tel) { alert('Completá Marca, Nombre y Teléfono'); return; }
+
+  const filas = []; let total=0;
+  document.querySelectorAll('#cuerpo-tabla tr').forEach(f=>{
+    const idBase = f.querySelector('[id^=cant-]')?.id?.replace('cant-','');
+    if (!idBase) return;
+    const c = parseFloat(document.getElementById(`cant-${idBase}`).value)||0;
+    const d = document.getElementById(`desc-${idBase}`).value.trim();
+    const p = parseFloat(document.getElementById(`prec-${idBase}`).value)||0;
+    if (d||p) { const subt = c*p; filas.push({cant:c, desc:d, precio:p, subtotal:subt}); total += subt; }
+  });
+
+  const invChecks = document.querySelectorAll('.inv-chk:checked');
+  const inventario = invChecks.length ? [...invChecks].map(cb=>cb.parentElement.textContent.trim()).join(' · ') : 'Ninguno';
+  const detalle = filas.map(f=>`${f.cant} x ${f.desc} — $${f.subtotal.toFixed(2).replace('.',',')}`).join('\n');
+
+  const ordenTexto = `═══════════════════════════════
+ORDEN DE SERVICIO — AUTO REGINA
+═══════════════════════════════
+FOLIO: ${folio}
+Juan Rotter 316 · Villa Regina
+Tel: 2984548329
+
+── DATOS DEL VEHÍCULO ──
+Marca: ${marca}
+Modelo: ${modelo||'---'}
+Color: ${color||'---'}
+Kilometraje: ${km||'---'}
+Patente: ${placa||'---'}
+Nº Serie: ${nserie||'---'}
+Ingreso: ${fechaIng}
+Salida: ${fechaSal}
+Grúa: ${grua}
+S.I.E.M.: ${siem}
+
+── CLIENTE ──
+Nombre: ${nombre}
+Teléfono: ${tel}
+Email: ${email}
+
+── TRABAJOS ──
+${detalle||'Sin registrar'}
+
+${tieneIVA?'I.V.A. incluido':'I.V.A. no incluido'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOTAL: $${total.toFixed(2).replace('.',',')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+── OBSERVACIONES ──
+${obs||'Sin observaciones'}
+
+── INVENTARIO ──
+${inventario}
+
+═══════════════════════════════
+AUTO REGINA — Servicio Mecánico
+═══════════════════════════════`;
+
   const { collection, addDoc, serverTimestamp } = Firestore;
-  const clienteId = document.getElementById('orden-cli').value;
-  const vehiculo = document.getElementById('orden-auto').value.trim();
-  const fechaIngreso = document.getElementById('fecha-ingreso').value;
-  const observaciones = document.getElementById('obs').value.trim();
-  
-  if (!clienteId || !fechaIngreso) {
-    alert('Seleccioná cliente y fecha de ingreso');
-    return;
-  }
-  
-  const filas = [];
-  let total = 0;
-  document.querySelectorAll('#cuerpo-tabla tr').forEach(fila => {
-    const cant = parseFloat(fila.querySelector('[id^=cant-]').value) || 0;
-    const desc = fila.querySelector('[id^=desc-]').value.trim();
-    const prec = parseFloat(fila.querySelector('[id^=prec-]').value) || 0;
-    if (desc && cant > 0) {
-      const subtotal = cant * prec;
-      filas.push({ cantidad: cant, descripcion: desc, precioUnitario: prec, subtotal });
-      total += subtotal;
-    }
+  await addDoc(collection(db,'ordenes'), {
+    folio, marca, modelo, color, km, placa, nserie,
+    fechaIngreso: fechaIng, fechaSalida: fechaSal, grua, siem,
+    nombreCliente: nombre, telefonoCliente: tel, emailCliente: email,
+    trabajos: filas, observaciones: obs, inventario,
+    iva: tieneIVA, total, creado: serverTimestamp()
   });
-  
-  const inventario = [];
-  document.querySelectorAll('.inv-chk').forEach(chk => {
-    inventario.push({ nombre: chk.parentElement.textContent.trim(), presente: chk.checked });
-  });
-  
-  const ordenData = {
-    clienteId,
-    vehiculo,
-    fechaIngreso,
-    trabajos: filas,
-    observaciones,
-    inventario,
-    total,
-    esPrueba: false,
-    creado: serverTimestamp()
-  };
-  
-  const docRef = await addDoc(collection(db, 'ordenes'), ordenData);
-  
-  const clienteSnap = await getDoc(doc(db, 'clientes', clienteId));
-  const nombreCliente = clienteSnap.exists() ? clienteSnap.data().nombre : 'Cliente';
-  
-  let textoOrden = `📋 ORDEN DE TRABAJO — AUTO REGINA
-━━━━━━━━━━━━━━━━━━━━
-🔢 N°: ${docRef.id.slice(-6).toUpperCase()}
-📅 Fecha: ${fechaIngreso}
-👤 Cliente: ${nombreCliente}
-🚗 Vehículo: ${vehiculo || '---'}
-━━━━━━━━━━━━━━━━━━━━
-🔧 TRABAJOS REALIZADOS:
-`;
-  filas.forEach(f => {
-    textoOrden += `${f.cantidad}x ${f.descripcion} — $${f.subtotal.toFixed(2).replace('.',',')}\n`;
-  });
-  textoOrden += `━━━━━━━━━━━━━━━━━━━━
-💰 TOTAL: $${total.toFixed(2).replace('.',',')}
-━━━━━━━━━━━━━━━━━━━━
-📝 OBSERVACIONES: ${observaciones || 'Sin observaciones'}
-📞 ${NUMERO_WSP}`;
-  
-  document.getElementById('texto-orden').textContent = textoOrden;
+
+  document.getElementById('texto-orden').textContent = ordenTexto;
   document.getElementById('caja-orden').classList.remove('oculto');
-  
-  document.getElementById('cuerpo-tabla').innerHTML = '';
-  agregarFila();
-  document.getElementById('orden-cli').value = '';
-  document.getElementById('orden-auto').value = '';
-  document.getElementById('obs').value = '';
-  document.querySelectorAll('.inv-chk').forEach(c => c.checked = false);
-  actualizarTotal();
 }
 
 async function copiarOrden() {
@@ -670,31 +594,15 @@ async function copiarOrden() {
   const btn = document.getElementById('btn-copiar-orden');
   try {
     await navigator.clipboard.writeText(texto);
-    btn.textContent = '✅ COPIADO';
-    btn.style.background = '#10B981';
-    setTimeout(() => {
-      btn.textContent = '📋 COPIAR ORDEN';
-      btn.style.background = '';
-    }, 3000);
+    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
+    setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN'; btn.classList.remove('btn-copiado');},3000);
   } catch {
     const area = document.getElementById('area-copiado');
-    area.value = texto;
-    area.select();
-    document.execCommand('copy');
-    btn.textContent = '✅ COPIADO';
-    btn.style.background = '#10B981';
-    setTimeout(() => {
-      btn.textContent = '📋 COPIAR ORDEN';
-      btn.style.background = '';
-    }, 3000);
+    area.value=texto; area.select(); document.execCommand('copy');
+    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
+    setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN'; btn.classList.remove('btn-copiado');},3000);
   }
 }
-
-window.onload = function() {
-  document.getElementById('fecha').valueAsDate = new Date();
-  document.getElementById('fecha-ingreso').valueAsDate = new Date();
-};
 </script>
-
 </body>
 </html>
