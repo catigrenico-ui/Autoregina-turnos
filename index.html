@@ -57,7 +57,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 .error{color:#EF4444;text-align:center;margin-top:12px;display:none;}
 .vista-previa{background:white;border:2px solid #0F52BA;border-radius:16px;padding:20px;margin-top:20px;white-space:pre-wrap;font-size:12px;line-height:1.5;}
 .oculto{display:none !important;}
-.lista-item{background:white;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .sin-datos{text-align:center;padding:30px;color:#64748B;}
 .acciones{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;}
 .area-copiado{position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none;}
@@ -269,8 +268,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <label class="inv-item"><input type="checkbox" class="inv-chk"> Encendedor</label>
 </div>
 </div>
-<button class="btn-principal" onclick="generar
-Orden()">✅ GENERAR Y GUARDAR ORDEN</button>
+<button class="btn-principal" onclick="generarOrden()">✅ GENERAR Y GUARDAR ORDEN</button>
 <div id="caja-orden" class="oculto">
 <div class="aviso-exito">✅ ¡Orden guardada con éxito!</div>
 <div class="vista-previa" id="texto-orden"></div>
@@ -318,16 +316,24 @@ function salir() {
 }
 
 // === NAVEGACIÓN ===
-function mostrar(nombre) {
+function mostrar(nombreActivo) {
   document.querySelectorAll('.pestaña').forEach(p => {
     p.classList.remove('activa','inactiva');
-    if(p.textContent.includes(nombre.replace('-',' '))) p.classList.add('activa');
-    else p.classList.add('inactiva');
+    const texto = p.textContent.trim();
+    if (texto.includes('Turnos') && nombreActivo === 'turnos' ||
+        texto.includes('Clientes') && nombreActivo === 'clientes' ||
+        texto.includes('Nueva Orden') && nombreActivo === 'orden' ||
+        texto.includes('Órdenes Guardadas') && nombreActivo === 'lista-ordenes') {
+      p.classList.add('activa');
+    } else {
+      p.classList.add('inactiva');
+    }
   });
-  ['turnos','clientes','orden','lista-ordenes'].forEach(s => {
-    document.getElementById('sec-'+s).classList.toggle('oculto', s !== nombre);
-  });
-  if(nombre === 'lista-ordenes') cargarListaOrdenes();
+  document.getElementById('sec-turnos').classList.toggle('oculto', nombreActivo !== 'turnos');
+  document.getElementById('sec-clientes').classList.toggle('oculto', nombreActivo !== 'clientes');
+  document.getElementById('sec-orden').classList.toggle('oculto', nombreActivo !== 'orden');
+  document.getElementById('sec-lista-ordenes').classList.toggle('oculto', nombreActivo !== 'lista-ordenes');
+  if (nombreActivo === 'lista-ordenes') cargarListaOrdenes();
 }
 
 function iniciarTaller() {
@@ -522,7 +528,7 @@ async function cargarCliente() {
   } catch(err) { console.error(err); }
 }
 
-// === ÓRDENES — FUNCIONES ===
+// === ÓRDENES ===
 function agregarFila() {
   const cuerpo = document.getElementById('cuerpo-tabla');
   const id = filaIndice++;
@@ -651,6 +657,7 @@ Firma cliente: ___________________
   
   document.getElementById('texto-orden').textContent = ordenTexto;
   document.getElementById('caja-orden').classList.remove('oculto');
+  alert('✅ ¡Orden guardada correctamente!');
 }
 
 async function copiarOrden() {
@@ -679,7 +686,8 @@ async function cargarListaOrdenes() {
     
     if(snap.empty) {
       c.innerHTML = '<p class="sin-datos">No hay órdenes guardadas todavía</p>';
-      return;
+      return
+; return;
     }
     
     c.innerHTML = '';
@@ -691,7 +699,6 @@ async function cargarListaOrdenes() {
       const tarjeta = document.createElement('div');
       tarjeta.className = 'item-datos';
       tarjeta.innerHTML = `
-       
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
           <div>
             <strong>📋 ${o.folio || 'Sin folio'}</strong><br>
@@ -720,22 +727,6 @@ async function eliminarOrden(id) {
     alert('Error al eliminar: ' + err.message);
   }
 }
-window.generarOrden = generarOrden;
-window.copiarOrden = copiarOrden;
-window.agregarFila = agregarFila;
-window.actualizarTotal = actualizarTotal;
-window.cargarCliente = cargarCliente;
-window.eliminarOrden = eliminarOrden;
-window.cambiarEstadoTurno = cambiarEstadoTurno;
-window.borrarTurno = borrarTurno;
-window.borrarCliente = borrarCliente;
-window.mostrar = mostrar;
-window.generarTurno = generarTurno;
-window.copiarTurno = copiarTurno;
-window.ingresar = ingresar;
-window.salir = salir;
-window.abrirAcceso = abrirAcceso;
-window.cerrarAcceso = cerrarAcceso;
 </script>
 </body>
 </html>
