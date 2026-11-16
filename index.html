@@ -157,7 +157,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <div class="modal-caja">
 <h3 style="text-align:center;color:#0F2B48;">🔧 ACCESO TALLER</h3>
 <label>Contraseña</label><input type="password" id="clave" placeholder="Escribí la contraseña">
-<button class="btn-ingresar" onclick="ingresar()">INGRESAR</button>
+<button class="btn-ingresar" onclick="cerrarAcceso();document.getElementById('pantalla-cliente').classList.add('oculto');document.getElementById('pantalla-taller').classList.remove('oculto');iniciarTodo();">INGRESAR</button>
 <button class="btn-volver" onclick="cerrarAcceso()">Volver</button>
 <p class="error" id="error-clave">Contraseña incorrecta</p>
 </div>
@@ -254,7 +254,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <td><input type="checkbox" id="chk-iva"></td>
 </tr>
 <tr class="fila-total">
-<td colspan="3">TOTAL $</td>
+<td colspan="3">
 <td id="total-general">0,00</td>
 </tr>
 </tfoot>
@@ -315,9 +315,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#0F2B48;}
 <script>
 const CLAVE_CORRECTA = '1234';
 const NUMERO_WSP = '+54 9 2984 54-8329';
-const API_KEY =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
+const API_KEY = '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';
 let filaIndice = 0;
 let historialConversacion = [];
+
 function actualizarTotal() {
   let total = 0;
   document.querySelectorAll('#cuerpo-tabla tr').forEach(fila => {
@@ -367,7 +368,16 @@ async function llamarIA(mensaje) {
       const cliSnap = await getDocs(collection(db, 'clientes'));
       const ordSnap = await getDocs(collection(db, 'ordenes'));
       let totalFac = 0;
-      ordSnap.forEach(d=>{ totalFac += d.data().total || 0; });
+      let cantidadOrdenesReales = 0;
+
+      ordSnap.forEach(d=>{
+        const dato = d.data();
+        if (dato.hasOwnProperty('esPrueba') && dato.esPrueba === false) {
+          totalFac += dato.total || 0;
+          cantidadOrdenesReales++;
+        }
+      });
+
       return `📊 RESUMEN — AUTO REGINA
 ━━━━━━━━━━━━━━━━━━━━
 📋 TURNOS: ${turnosSnap.size}
@@ -375,7 +385,7 @@ async function llamarIA(mensaje) {
 • Confirmados: ${conf}
 • Atendidos: ${aten}
 👥 CLIENTES: ${cliSnap.size}
-✅ ÓRDENES: ${ordSnap.size}
+✅ ÓRDENES REALES: ${cantidadOrdenesReales}
 💰 TOTAL FACTURADO: $${totalFac.toLocaleString('es-AR',{minimumFractionDigits:2})}
 ━━━━━━━━━━━━━━━━━━━━`;
     } catch { return 'No pude leer los datos.'; }
@@ -386,9 +396,9 @@ async function llamarIA(mensaje) {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'openai/gpt-3.5-turbo',
+        model: 'meta-llama/llama-3.1-8b-instruct',
         messages: [
-          { role: 'system', content: 'Eres asistente técnico automotriz para AUTO REGINA. Explicá claro, paso a paso, para mecánicos y aprendices. Usá lenguaje sencillo en español. Incluí códigos OBD, causas comunes y soluciones prácticas.' },
+          { role: 'system', content: 'Eres asistente técnico automotriz para AUTO REGINA. Explicá claro, paso a paso, en español sencillo.' },
           ...historialConversacion,
           { role: 'user', content: mensaje }
         ]
@@ -422,17 +432,6 @@ async function enviarIA() {
 
 function abrirAcceso() { document.getElementById('modal-acceso').style.display='flex'; }
 function cerrarAcceso() { document.getElementById('modal-acceso').style.display='none'; }
-async function ingresar() {
-  if (document.getElementById('clave').value === CLAVE_CORRECTA) {
-    cerrarAcceso();
-    document.getElementById('pantalla-cliente').classList.add('oculto');
-    document.getElementById('pantalla-taller').classList.remove('oculto');
-    await iniciarTodo();
-  } else {
-    document.getElementById('error-clave').style.display='block';
-    setTimeout(()=>document.getElementById('error-clave').style.display='none',3000);
-  }
-}
 function salir() {
   document.getElementById('pantalla-taller').classList.add('oculto');
   document.getElementById('pantalla-cliente').classList.remove('oculto');
@@ -576,114 +575,94 @@ async function cargarSelectClientes() {
 
 async function cargarCliente() {
   const id = document.getElementById('orden-cli').value;
-  if (!id) {
-    document.getElementById('orden-nombre').value='';
-    document.getElementById('orden-tel').value='';
-    document.getElementById('orden-email').value='';
+if (!id) {
+    document.getElementById('orden-auto').value = '';
     return;
   }
-  const { doc, getDoc } = Firestore;
-  const d = await getDoc(doc(db,'clientes',id));
-  if (d.exists()) {
-    const x=d.data();
-    document.getElementById('orden-nombre').value = x.nombre||'';
-    document.getElementById('orden-tel').value = x.telefono||'';
-    document.getElementById('orden-email').value = x.email||'';
-    if (x.vehiculo) {
-      const partes = x.vehiculo.split(' ');
-      document.getElementById('marca').value = partes[0]||'';
-      document.getElementById('modelo').value = partes.slice(1).join(' ')||'';
+  const { getDoc, doc } = Firestore;
+  try {
+    const d = await getDoc(doc(db, 'clientes', id));
+    if (d.exists()) {
+      document.getElementById('orden-auto').value = d.data().vehiculo || '';
     }
-  }
+  } catch {}
 }
 
 async function generarOrden() {
-  const folio = document.getElementById('folio').value.trim() || 'S/N';
-  const marca = document.getElementById('marca').value.trim();
-  const modelo = document.getElementById('modelo').value.trim();
-  const color = document.getElementById('color').value.trim();
-  const km = document.getElementById('km').value.trim();
-  const placa = document.getElementById('placa').value.trim();
-  const nserie = document.getElementById('nserie').value.trim();
-  const fechaIng = document.getElementById('fecha-ingreso').value;
-  const fechaSal = document.getElementById('fecha-salida').value || 'PENDIENTE';
-  const grua = document.getElementById('grua').checked ? 'SI' : 'NO';
-  const siem = document.getElementById('siem').checked ? 'SI' : 'NO';
-  const nombre = document.getElementById('orden-nombre').value.trim();
-  const tel = document.getElementById('orden-tel').value.trim();
-  const email = document.getElementById('orden-email').value.trim() || '---';
-  const obs = document.getElementById('obs').value.trim();
-  const tieneIVA = document.getElementById('chk-iva').checked;
-
-  if (!marca||!nombre||!tel) { alert('Completá Marca, Nombre y Teléfono'); return; }
-
-  const filas = []; let total=0;
-  document.querySelectorAll('#cuerpo-tabla tr').forEach(f=>{
-    const idBase = f.querySelector('[id^=cant-]')?.id?.replace('cant-','');
-    if (!idBase) return;
-    const c = parseFloat(document.getElementById(`cant-${idBase}`).value)||0;
-    const d = document.getElementById(`desc-${idBase}`).value.trim();
-    const p = parseFloat(document.getElementById(`prec-${idBase}`).value)||0;
-    if (d||p) { const subt = c*p; filas.push({cant:c, desc:d, precio:p, subtotal:subt}); total += subt; }
-  });
-
-  const invChecks = document.querySelectorAll('.inv-chk:checked');
-  const inventario = invChecks.length ? [...invChecks].map(cb=>cb.parentElement.textContent.trim()).join(' · ') : 'Ninguno';
-  const detalle = filas.map(f=>`${f.cant} x ${f.desc} — $${f.subtotal.toFixed(2).replace('.',',')}`).join('\n');
-
-  const ordenTexto = `═══════════════════════════════
-ORDEN DE SERVICIO — AUTO REGINA
-═══════════════════════════════
-FOLIO: ${folio}
-Juan Rotter 316 · Villa Regina
-Tel: 2984548329
-
-── DATOS DEL VEHÍCULO ──
-Marca: ${marca}
-Modelo: ${modelo||'---'}
-Color: ${color||'---'}
-Kilometraje: ${km||'---'}
-Patente: ${placa||'---'}
-Nº Serie: ${nserie||'---'}
-Ingreso: ${fechaIng}
-Salida: ${fechaSal}
-Grúa: ${grua}
-S.I.E.M.: ${siem}
-
-── CLIENTE ──
-Nombre: ${nombre}
-Teléfono: ${tel}
-Email: ${email}
-
-── TRABAJOS ──
-${detalle||'Sin registrar'}
-
-${tieneIVA?'I.V.A. incluido':'I.V.A. no incluido'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TOTAL: $${total.toFixed(2).replace('.',',')}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-── OBSERVACIONES ──
-${obs||'Sin observaciones'}
-
-── INVENTARIO ──
-${inventario}
-
-═══════════════════════════════
-AUTO REGINA — Servicio Mecánico
-═══════════════════════════════`;
-
   const { collection, addDoc, serverTimestamp } = Firestore;
-  await addDoc(collection(db,'ordenes'), {
-    folio, marca, modelo, color, km, placa, nserie,
-    fechaIngreso: fechaIng, fechaSalida: fechaSal, grua, siem,
-    nombreCliente: nombre, telefonoCliente: tel, emailCliente: email,
-    trabajos: filas, observaciones: obs, inventario,
-    iva: tieneIVA, total, creado: serverTimestamp()
+  const clienteId = document.getElementById('orden-cli').value;
+  const vehiculo = document.getElementById('orden-auto').value.trim();
+  const fechaIngreso = document.getElementById('fecha-ingreso').value;
+  const observaciones = document.getElementById('obs').value.trim();
+  
+  if (!clienteId || !fechaIngreso) {
+    alert('Seleccioná cliente y fecha de ingreso');
+    return;
+  }
+  
+  const filas = [];
+  let total = 0;
+  document.querySelectorAll('#cuerpo-tabla tr').forEach(fila => {
+    const cant = parseFloat(fila.querySelector('[id^=cant-]').value) || 0;
+    const desc = fila.querySelector('[id^=desc-]').value.trim();
+    const prec = parseFloat(fila.querySelector('[id^=prec-]').value) || 0;
+    if (desc && cant > 0) {
+      const subtotal = cant * prec;
+      filas.push({ cantidad: cant, descripcion: desc, precioUnitario: prec, subtotal });
+      total += subtotal;
+    }
   });
-
-  document.getElementById('texto-orden').textContent = ordenTexto;
+  
+  const inventario = [];
+  document.querySelectorAll('.inv-chk').forEach(chk => {
+    inventario.push({ nombre: chk.parentElement.textContent.trim(), presente: chk.checked });
+  });
+  
+  const ordenData = {
+    clienteId,
+    vehiculo,
+    fechaIngreso,
+    trabajos: filas,
+    observaciones,
+    inventario,
+    total,
+    esPrueba: false,
+    creado: serverTimestamp()
+  };
+  
+  const docRef = await addDoc(collection(db, 'ordenes'), ordenData);
+  
+  const clienteSnap = await getDoc(doc(db, 'clientes', clienteId));
+  const nombreCliente = clienteSnap.exists() ? clienteSnap.data().nombre : 'Cliente';
+  
+  let textoOrden = `📋 ORDEN DE TRABAJO — AUTO REGINA
+━━━━━━━━━━━━━━━━━━━━
+🔢 N°: ${docRef.id.slice(-6).toUpperCase()}
+📅 Fecha: ${fechaIngreso}
+👤 Cliente: ${nombreCliente}
+🚗 Vehículo: ${vehiculo || '---'}
+━━━━━━━━━━━━━━━━━━━━
+🔧 TRABAJOS REALIZADOS:
+`;
+  filas.forEach(f => {
+    textoOrden += `${f.cantidad}x ${f.descripcion} — $${f.subtotal.toFixed(2).replace('.',',')}\n`;
+  });
+  textoOrden += `━━━━━━━━━━━━━━━━━━━━
+💰 TOTAL: $${total.toFixed(2).replace('.',',')}
+━━━━━━━━━━━━━━━━━━━━
+📝 OBSERVACIONES: ${observaciones || 'Sin observaciones'}
+📞 ${NUMERO_WSP}`;
+  
+  document.getElementById('texto-orden').textContent = textoOrden;
   document.getElementById('caja-orden').classList.remove('oculto');
+  
+  document.getElementById('cuerpo-tabla').innerHTML = '';
+  agregarFila();
+  document.getElementById('orden-cli').value = '';
+  document.getElementById('orden-auto').value = '';
+  document.getElementById('obs').value = '';
+  document.querySelectorAll('.inv-chk').forEach(c => c.checked = false);
+  actualizarTotal();
 }
 
 async function copiarOrden() {
@@ -691,15 +670,31 @@ async function copiarOrden() {
   const btn = document.getElementById('btn-copiar-orden');
   try {
     await navigator.clipboard.writeText(texto);
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN'; btn.classList.remove('btn-copiado');},3000);
+    btn.textContent = '✅ COPIADO';
+    btn.style.background = '#10B981';
+    setTimeout(() => {
+      btn.textContent = '📋 COPIAR ORDEN';
+      btn.style.background = '';
+    }, 3000);
   } catch {
     const area = document.getElementById('area-copiado');
-    area.value=texto; area.select(); document.execCommand('copy');
-    btn.textContent='✅ COPIADO'; btn.classList.add('btn-copiado');
-    setTimeout(()=>{btn.textContent='📋 COPIAR ORDEN'; btn.classList.remove('btn-copiado');},3000);
+    area.value = texto;
+    area.select();
+    document.execCommand('copy');
+    btn.textContent = '✅ COPIADO';
+    btn.style.background = '#10B981';
+    setTimeout(() => {
+      btn.textContent = '📋 COPIAR ORDEN';
+      btn.style.background = '';
+    }, 3000);
   }
 }
+
+window.onload = function() {
+  document.getElementById('fecha').valueAsDate = new Date();
+  document.getElementById('fecha-ingreso').valueAsDate = new Date();
+};
 </script>
+
 </body>
 </html>
